@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Panel de citas · Clínica Dental Raíz</title>
+  <meta name="theme-color" content="#0f4c7a">
+  <link rel="icon" href="media/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+  <!-- Ingreso -->
+  <main class="ingreso" data-ingreso hidden>
+    <form class="ingreso__caja" data-form-ingreso>
+      <img src="media/logo.png" alt="" width="64" height="65">
+      <h1>Panel de citas</h1>
+      <p>Clínica Dental <span data-nombre>Raíz</span></p>
+      <label class="campo">
+        <span>Correo</span>
+        <input type="email" name="correo" autocomplete="username" required>
+      </label>
+      <label class="campo">
+        <span>Contraseña</span>
+        <input type="password" name="clave" autocomplete="current-password" required>
+      </label>
+      <p class="ingreso__error" data-error-ingreso role="alert"></p>
+      <button class="boton" type="submit">Entrar</button>
+    </form>
+  </main>
+
+  <!-- Panel -->
+  <div class="panel" data-panel hidden>
+    <header class="barra">
+      <div class="barra__marca">
+        <img src="media/logo.png" alt="" width="34" height="35">
+        <div><strong>Panel de citas</strong><span>Clínica Dental <span data-nombre>Raíz</span></span></div>
+      </div>
+      <div class="barra__acciones">
+        <span class="guardado" data-guardado aria-live="polite"></span>
+        <a class="enlace" href="./#reservar" target="_blank" rel="noopener">Ver la web</a>
+        <button class="enlace" type="button" data-salir>Salir</button>
+      </div>
+    </header>
+
+    <div class="cuerpo">
+      <aside class="lista">
+        <p class="lista__titulo">Próximos días</p>
+        <div class="lista__dias" data-lista-dias></div>
+      </aside>
+
+      <section class="dia" data-dia aria-live="polite">
+        <div class="dia__cabeza">
+          <div>
+            <p class="dia__sub" data-dia-sub></p>
+            <h2 data-dia-titulo></h2>
+          </div>
+          <label class="interruptor">
+            <input type="checkbox" data-completo>
+            <span class="interruptor__pista"><span></span></span>
+            <span>Día completo ocupado</span>
+          </label>
+        </div>
+        <p class="ayuda">Toca una hora para marcarla <b>ocupada</b> o <b>libre</b>. Los pacientes solo ven qué horas están tomadas; las notas son solo para ti.</p>
+        <div class="dia__resumen" data-resumen></div>
+        <div class="horario" data-horario></div>
+        <div class="dia__pie">
+          <button class="boton boton--suave" type="button" data-liberar>Liberar todo el día</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <p class="aviso" data-aviso hidden></p>
+
+  <script src="negocio.js"></script>
+  <script type="module" src="panel.js"></script>
+</body>
+</html>

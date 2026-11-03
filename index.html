@@ -458,6 +458,13 @@
     </button>
   </div>
 
+  <script src="negocio.js"></script>
   <script src="main.js"></script>
+  <script type="module">
+    // Lee en vivo los horarios que el dentista marca como ocupados
+    import { escucharOcupado } from './agenda.js';
+    const [desde, hasta] = window.rangoReserva;
+    escucharOcupado(desde, hasta, window.ponerOcupado);
+  </script>
 </body>
 </html>

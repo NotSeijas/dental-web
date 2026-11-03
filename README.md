@@ -12,3 +12,12 @@ Sitio estático (HTML/CSS/JS). Vista previa: config `dental-web` en `E:\codex\.c
 - Dirección, horario real y si atienden domingos.
 - Lista final de servicios (y si quieren mostrar precios).
 - Fotos propias del consultorio y del equipo.
+
+## Panel de citas (Firebase)
+
+- `panel.html` → panel del dentista (https://notseijas.github.io/dental-web/panel.html). Marca horas o días completos como ocupados y guarda notas privadas por hora.
+- La web lee en vivo los horarios ocupados y los muestra tachados / "lleno"; la reserva sigue llegando por WhatsApp.
+- Firebase: proyecto `clinica-dental-raiz` (cuenta de Diego), Firestore + Authentication con correo/contraseña. Registro público desactivado: las cuentas del dentista se crean en Firebase → Authentication → Users → Add user.
+- Datos: `ocupado/{AAAA-MM-DD}` = `{ completo, horas[] }` (público, solo lectura) y `notas/{AAAA-MM-DD}` (privado). Reglas en Firestore → Rules.
+- Vista de prueba sin login (solo en la compu): `http://localhost:6200/panel.html?demo`.
+- `negocio.js` tiene nombre, WhatsApp y horario de atención (lo usan la web y el panel).

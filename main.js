@@ -1,20 +1,3 @@
-// ===== Datos del negocio (editar aquí) =====
-const NEGOCIO = {
-  nombre: 'Raíz', // nombre provisional, confirmar con el cliente
-  wa: '51972845629',
-  telefono: '972 845 629',
-  direccion: 'Dirección por confirmar',
-  // 0 = domingo … 6 = sábado; tramos en horas decimales
-  horario: {
-    1: [[9, 13], [15, 20]],
-    2: [[9, 13], [15, 20]],
-    3: [[9, 13], [15, 20]],
-    4: [[9, 13], [15, 20]],
-    5: [[9, 13], [15, 20]],
-    6: [[9, 14]],
-  },
-};
-
 const SERVICIOS = [
   {
     id: 'evaluacion', nombre: 'Evaluación y diagnóstico', img: 'diagnostico',
@@ -288,14 +271,18 @@ for (let i = 0; diasDisp.length < 12 && i < 21; i++) {
   diasDisp.push(d);
 }
 function slotsDe(d) {
-  const out = [];
   const esHoy = d.getTime() === hoy.getTime();
   const limite = esHoy ? horaDecimal(new Date()) + 1 : -1; // mínimo una hora de anticipación
-  (NEGOCIO.horario[d.getDay()] || []).forEach(([a, b]) => {
-    for (let h = a; h <= b - 0.5; h += 0.5) if (h >= limite) out.push(h);
-  });
-  return out;
+  return horasDelDia(d).filter((h) => h >= limite);
 }
+
+// Horarios ocupados que marca el dentista en su panel (llegan desde agenda.js)
+let OCUPADO = {};
+const ocupada = (d, h) => {
+  const o = OCUPADO[claveFecha(d)];
+  return !!o && (o.completo || o.horas.includes(h));
+};
+const diaLleno = (d) => slotsDe(d).every((h) => ocupada(d, h));
 diasDisp.forEach((d, i) => {
   const etiqueta = i === 0 && d.getTime() === hoy.getTime() ? 'Hoy' : DIAS_CORTOS[d.getDay()];
   diasEl.insertAdjacentHTML('beforeend', `
@@ -304,6 +291,30 @@ diasDisp.forEach((d, i) => {
       <span>${etiqueta}</span><strong>${d.getDate()}</strong><small>${MESES[d.getMonth()].slice(0, 3)}</small>
     </button>`);
 });
+function marcarDias() {
+  $$('.dia', diasEl).forEach((b) => {
+    const d = diasDisp[+b.dataset.i];
+    const lleno = diaLleno(d);
+    b.disabled = lleno;
+    b.classList.toggle('lleno', lleno);
+    $('small', b).textContent = lleno ? 'lleno' : MESES[d.getMonth()].slice(0, 3);
+  });
+}
+
+// La agenda llama a esto cada vez que el dentista cambia algo
+window.rangoReserva = [diasDisp[0], diasDisp.at(-1)];
+window.ponerOcupado = (mapa) => {
+  OCUPADO = mapa;
+  if (cita.dia && diaLleno(cita.dia)) {
+    cita.dia = null; cita.hora = null;
+    $$('.dia', diasEl).forEach((x) => x.setAttribute('aria-checked', 'false'));
+  } else if (cita.dia && cita.hora != null && ocupada(cita.dia, cita.hora)) {
+    cita.hora = null;
+  }
+  marcarDias();
+  pintarHoras();
+  pintarTarjeta();
+};
 
 function pintarHoras() {
   horasEl.innerHTML = '';
@@ -318,15 +329,22 @@ function pintarHoras() {
     horasEl.insertAdjacentHTML('beforeend', `<p class="horas__grupo">${nom}</p>`);
     const fila = document.createElement('div');
     fila.className = 'horas__fila';
-    hs.forEach((h) => fila.insertAdjacentHTML('beforeend',
-      `<button type="button" class="hora" role="radio" aria-checked="${cita.hora === h}" data-h="${h}">${fmtHora(h)}</button>`));
+    hs.forEach((h) => {
+      const tomada = ocupada(cita.dia, h);
+      fila.insertAdjacentHTML('beforeend',
+        `<button type="button" class="hora${tomada ? ' tomada' : ''}" role="radio" aria-checked="${cita.hora === h}" data-h="${h}"
+          ${tomada ? `disabled aria-label="${fmtHora(h)}, ocupada"` : ''}>${fmtHora(h)}</button>`);
+    });
     horasEl.appendChild(fila);
   });
+  if (slots.some((h) => ocupada(cita.dia, h))) {
+    horasEl.insertAdjacentHTML('beforeend', '<p class="horas__nota">Las horas tachadas ya están reservadas.</p>');
+  }
 }
 
 diasEl.addEventListener('click', (e) => {
   const b = e.target.closest('.dia');
-  if (!b) return;
+  if (!b || b.disabled) return;
   $$('.dia', diasEl).forEach((x) => x.setAttribute('aria-checked', String(x === b)));
   cita.dia = diasDisp[+b.dataset.i];
   cita.hora = null;
@@ -335,7 +353,7 @@ diasEl.addEventListener('click', (e) => {
 });
 horasEl.addEventListener('click', (e) => {
   const b = e.target.closest('.hora');
-  if (!b) return;
+  if (!b || b.disabled) return;
   $$('.hora', horasEl).forEach((x) => x.setAttribute('aria-checked', String(x === b)));
   cita.hora = +b.dataset.h;
   pintarTarjeta();

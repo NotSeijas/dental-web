@@ -423,6 +423,12 @@ body:not(.cargando) .carga__in { opacity: 0; transform: translateY(-60px); }
 }
 .hora[aria-checked="true"] { background: var(--hoja); border-color: var(--hoja); color: var(--azul-noche); }
 .horas__vacio { color: #8fb0c6; }
+.dia.lleno, .hora.tomada { cursor: not-allowed; opacity: 0.42; border-style: dashed; }
+.dia.lleno small { color: #ffb3c1; font-weight: 600; }
+.hora.tomada { text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, 0.6); }
+.dia.lleno:active, .hora.tomada:active { transform: none; }
+@media (hover: hover) { .dia.lleno:hover, .hora.tomada:hover { border-color: rgba(255, 255, 255, 0.16); } }
+.horas__nota { margin-top: 14px; font-size: 0.85rem; color: #a9cbe2; }
 
 .paso--datos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .paso--datos legend { grid-column: 1 / -1; }
