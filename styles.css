@@ -109,6 +109,36 @@ html { scrollbar-color: var(--azul) var(--fondo); }
 @keyframes aparece { to { opacity: 1; } }
 @keyframes brillo { 0% { opacity: 0; transform: scale(0) rotate(-90deg); } 60% { opacity: 1; transform: scale(1.35) rotate(15deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
 .carga__txt { margin-top: 6px; font-family: var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: -0.01em; opacity: 0; animation: aparece 500ms var(--ease) 1350ms forwards; }
+/* Gotita llega dando saltitos, aterriza y mira la sonrisa */
+.carga__in { position: relative; }
+.carga__gotita { position: absolute; right: -100px; bottom: -10px; width: 86px; height: 96px; transform: translateX(190px); opacity: 0;
+  animation: gcLlega 950ms cubic-bezier(0.25, 0.6, 0.35, 1) 250ms forwards; }
+.carga__gotita-salto { width: 100%; height: 100%; transform: scaleX(-1);
+  animation: gcSaltos 950ms linear 250ms, gcGira 1ms linear 1200ms forwards, gcFestejo 600ms cubic-bezier(0.34, 1.4, 0.64, 1) 1650ms; }
+.carga__gotita svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 8px 10px rgba(3, 20, 38, 0.35)); }
+.gc__masa { transform-box: fill-box; transform-origin: 50% 100%; animation: gcAterriza 420ms cubic-bezier(0.34, 1.5, 0.64, 1) 1200ms, respiraG 2.6s ease-in-out 2.2s infinite; }
+.gc__borde { fill: none; stroke: var(--tinta); stroke-width: 4; stroke-linejoin: round; }
+.gc__luz { fill: none; stroke: #fff; stroke-width: 3.5; stroke-linecap: round; opacity: 0.9; }
+.gc__ojos ellipse { fill: var(--tinta); }
+.gc__pupila { fill: #fff; animation: gcMira 600ms var(--ease) 1350ms forwards; }
+.gc__ojos { transform-box: fill-box; transform-origin: center; animation: parpadea 3s 1.9s infinite; }
+.gc__cachete { fill: #ff8fa8; opacity: 0.6; }
+.gc__boca { fill: none; stroke: var(--tinta); stroke-width: 3.5; stroke-linecap: round; }
+.gc__pie { fill: #fff; stroke: var(--tinta); stroke-width: 3.5; transform-box: fill-box; transform-origin: center; }
+.gc__pie--i { animation: pieI 317ms ease-in-out 250ms 3; }
+.gc__pie--d { animation: pieD 317ms ease-in-out 250ms 3; }
+@keyframes gcLlega { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+@keyframes gcSaltos {
+  0%, 33.3%, 66.6%, 100% { transform: scaleX(-1) translateY(0); }
+  16.6% { transform: scaleX(-1) translateY(-34px) rotate(8deg); }
+  50% { transform: scaleX(-1) translateY(-26px) rotate(8deg); }
+  83.3% { transform: scaleX(-1) translateY(-16px) rotate(6deg); }
+}
+@keyframes gcGira { to { transform: none; } }
+@keyframes gcAterriza { 0% { transform: scale(1.22, 0.78); } 55% { transform: scale(0.94, 1.08); } 100% { transform: none; } }
+@keyframes gcMira { to { transform: translate(-2px, -2.4px); } }
+@keyframes gcFestejo { 0%, 100% { transform: none; } 45% { transform: translateY(-22px) rotate(-10deg); } }
+@media (max-width: 520px) { .carga__gotita { right: -70px; width: 62px; height: 70px; } }
 body:not(.cargando) .carga { transform: translateY(-110%); border-radius: 0 0 50% 50% / 0 0 22vh 22vh; visibility: hidden; }
 body:not(.cargando) .carga__in { opacity: 0; transform: translateY(-60px); }
 @media (prefers-reduced-motion: reduce) {
