@@ -87,17 +87,28 @@ html { scrollbar-color: var(--azul) var(--fondo); }
 .carga__in { display: grid; justify-items: center; gap: 10px; transition: opacity 400ms var(--ease), transform 700ms cubic-bezier(0.76, 0, 0.24, 1); }
 .carga__logo { width: 76px; opacity: 0; animation: logoEntra 700ms var(--ease) 80ms forwards; }
 @keyframes logoEntra { from { opacity: 0; transform: translateY(10px) scale(0.92); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
-.sonrisa { width: 190px; height: auto; overflow: visible; }
-.sonrisa__boca { fill: var(--azul-noche); opacity: 0; animation: aparece 300ms var(--ease) 650ms forwards; }
-.sonrisa__labio { fill: none; stroke: var(--hoja); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: traza 650ms cubic-bezier(0.65, 0, 0.35, 1) 300ms forwards; }
-.sonrisa__labio--sup { stroke-width: 3; opacity: 0.7; animation-delay: 420ms; }
-.sonrisa__dientes rect { fill: #fff; transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0.2) translateY(-8px); opacity: 0; animation: diente 420ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(800ms + var(--i) * 55ms) forwards; }
-.sonrisa__brillo { fill: #fff; transform-box: fill-box; transform-origin: center; opacity: 0; animation: brillo 700ms var(--ease) 1250ms forwards; }
-.carga__txt { font-family: var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: -0.01em; opacity: 0; animation: aparece 500ms var(--ease) 1000ms forwards; }
+.sonrisa { width: 230px; height: auto; overflow: visible; }
+/* 1) se traza el labio  2) la boca se abre  3) dientes  4) hoyuelos  5) brillo  6) respira */
+.sonrisa__todo { transform-box: fill-box; transform-origin: 50% 60%; animation: respira 2.4s ease-in-out 1.9s infinite; }
+.sonrisa__labio { fill: none; stroke: var(--hoja); stroke-width: 14; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: traza 550ms cubic-bezier(0.65, 0, 0.35, 1) 250ms forwards; }
+.sonrisa__boca { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); animation: abre 650ms cubic-bezier(0.34, 1.45, 0.64, 1) 720ms forwards; }
+.sonrisa__interior { fill: #fff; stroke: var(--hoja); stroke-width: 14; stroke-linejoin: round; }
+.sonrisa__diente { fill: var(--azul-hondo); transform-box: fill-box; transform: scaleX(0); animation: diente 450ms var(--ease) 1150ms forwards; }
+.sonrisa__diente--i { transform-origin: 0 50%; }
+.sonrisa__diente--d { transform-origin: 100% 50%; }
+.sonrisa__hoyuelo { fill: var(--hoja); transform-box: fill-box; opacity: 0; transform: scale(0.2) rotate(-40deg); animation: hoyuelo 550ms cubic-bezier(0.34, 1.7, 0.64, 1) 1250ms forwards; }
+.sonrisa__hoyuelo--i { transform-origin: 100% 100%; }
+.sonrisa__hoyuelo--d { transform-origin: 0 100%; transform: scale(0.2) rotate(40deg); animation-delay: 1330ms; }
+.sonrisa__brillo { fill: #fff; transform-box: fill-box; transform-origin: center; opacity: 0; animation: brillo 900ms var(--ease) 1500ms forwards, titila 1.6s ease-in-out 2.4s infinite; }
 @keyframes traza { to { stroke-dashoffset: 0; } }
+@keyframes abre { to { transform: scaleY(1); } }
+@keyframes diente { to { transform: scaleX(1); } }
+@keyframes hoyuelo { to { opacity: 1; transform: none; } }
+@keyframes respira { 50% { transform: scale(1.04) translateY(-3px); } }
+@keyframes titila { 50% { opacity: 0.35; transform: scale(0.7) rotate(45deg); } }
 @keyframes aparece { to { opacity: 1; } }
-@keyframes diente { to { opacity: 1; transform: none; } }
-@keyframes brillo { 0% { opacity: 0; transform: scale(0) rotate(-45deg); } 55% { opacity: 1; transform: scale(1.25) rotate(10deg); } 100% { opacity: 0.95; transform: scale(1) rotate(0); } }
+@keyframes brillo { 0% { opacity: 0; transform: scale(0) rotate(-90deg); } 60% { opacity: 1; transform: scale(1.35) rotate(15deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+.carga__txt { margin-top: 6px; font-family: var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: -0.01em; opacity: 0; animation: aparece 500ms var(--ease) 1350ms forwards; }
 body:not(.cargando) .carga { transform: translateY(-110%); border-radius: 0 0 50% 50% / 0 0 22vh 22vh; visibility: hidden; }
 body:not(.cargando) .carga__in { opacity: 0; transform: translateY(-60px); }
 @media (prefers-reduced-motion: reduce) {

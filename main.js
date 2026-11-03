@@ -162,7 +162,7 @@ function terminarCarga() {
   document.body.classList.remove('cargando');
   setTimeout(() => $('.hero').classList.add('listo'), reduce ? 0 : 280);
 }
-window.addEventListener('load', () => setTimeout(terminarCarga, reduce ? 0 : Math.max(0, 1750 - (performance.now() - inicio))));
+window.addEventListener('load', () => setTimeout(terminarCarga, reduce ? 0 : Math.max(0, 2300 - (performance.now() - inicio))));
 setTimeout(terminarCarga, 4000);
 
 // ===== Menú móvil =====
