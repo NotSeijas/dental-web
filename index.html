@@ -11,11 +11,32 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script>document.documentElement.classList.add("js")</script>
 </head>
 <body class="cargando">
 
   <div class="carga" aria-hidden="true">
-    <img class="carga__logo" src="media/logo-blanco.png" alt="" width="120" height="122">
+    <div class="carga__in">
+      <img class="carga__logo" src="media/logo-blanco.png" alt="" width="120" height="122">
+      <svg class="sonrisa" viewBox="0 0 200 80">
+        <defs>
+          <clipPath id="boca"><path d="M24 22 Q100 42 176 22 Q100 98 24 22 Z"/></clipPath>
+        </defs>
+        <path class="sonrisa__boca" d="M24 22 Q100 42 176 22 Q100 98 24 22 Z"/>
+        <g clip-path="url(#boca)" class="sonrisa__dientes">
+          <rect style="--i:0" x="41" y="25" width="18" height="22" rx="5"/>
+          <rect style="--i:1" x="61" y="27.5" width="18" height="24" rx="5"/>
+          <rect style="--i:2" x="81" y="29" width="18" height="25" rx="5"/>
+          <rect style="--i:3" x="101" y="29" width="18" height="25" rx="5"/>
+          <rect style="--i:4" x="121" y="27.5" width="18" height="24" rx="5"/>
+          <rect style="--i:5" x="141" y="25" width="18" height="22" rx="5"/>
+        </g>
+        <path class="sonrisa__labio" pathLength="1" d="M24 22 Q100 98 176 22"/>
+        <path class="sonrisa__labio sonrisa__labio--sup" pathLength="1" d="M24 22 Q100 42 176 22"/>
+        <path class="sonrisa__brillo" d="M116 4 l2.6 6.4 6.4 2.6 -6.4 2.6 -2.6 6.4 -2.6 -6.4 -6.4 -2.6 6.4 -2.6 Z"/>
+      </svg>
+      <p class="carga__txt">Clínica Dental <span data-nombre>Raíz</span></p>
+    </div>
   </div>
 
   <header class="top">
@@ -48,7 +69,10 @@
     <section class="hero" id="inicio">
       <div class="wrap hero__in">
         <div class="hero__txt">
-          <h1>Sonrisas sanas,<br><span class="hoja">de raíz.</span></h1>
+          <h1>
+            <span class="linea"><span>Sonrisas sanas,</span></span>
+            <span class="linea"><span class="hoja">de raíz.<svg class="hoja__curva" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M6 8 Q150 52 294 8"/></svg></span></span>
+          </h1>
           <p class="hero__lead">Odontología integral para toda la familia: desde tu limpieza de rutina hasta implantes y ortodoncia. Mira nuestros servicios, reserva tu cita en línea o escríbenos por WhatsApp.</p>
           <div class="hero__ctas">
             <a class="btn btn--blanco" href="#reservar">
@@ -62,21 +86,49 @@
           </div>
         </div>
         <figure class="hero__foto">
-          <img src="media/conversacion.jpg" alt="Odontólogo conversando con una paciente en el consultorio" width="1400" height="1050" fetchpriority="high">
+          <div class="hero__marco">
+            <img src="media/conversacion.jpg" alt="Odontólogo conversando con una paciente en el consultorio" width="1400" height="1050" fetchpriority="high" data-parallax="0.08">
+          </div>
           <figcaption class="estado" data-estado>
             <span class="estado__punto"></span><span data-estado-txt>Horario de atención</span>
           </figcaption>
+          <div class="hero__mini" aria-hidden="true">
+            <img src="media/g-sonrisa-nino.jpg" alt="" width="1200" height="675">
+            <span>Atención para toda la familia</span>
+          </div>
         </figure>
       </div>
-      <ul class="hero__cinta" aria-label="Algunos servicios">
-        <li>Limpieza</li><li>Blanqueamiento</li><li>Ortodoncia</li><li>Alineadores</li><li>Implantes</li><li>Endodoncia</li><li>Odontopediatría</li><li>Carillas</li>
-      </ul>
+      <div class="cinta" aria-label="Algunos servicios">
+        <ul class="cinta__pista">
+          <li>Limpieza</li><li>Blanqueamiento</li><li>Ortodoncia</li><li>Alineadores</li><li>Implantes</li><li>Endodoncia</li><li>Odontopediatría</li><li>Carillas</li><li>Cirugía</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SONRISAS -->
+    <section class="sonrisas" aria-labelledby="t-sonrisas">
+      <div class="wrap sonrisas__cab" data-anim>
+        <h2 id="t-sonrisas">Cada sonrisa tiene su historia.</h2>
+        <p>Niños, jóvenes y adultos: tratamos a cada paciente con calma y le explicamos todo antes de empezar.</p>
+      </div>
+      <div class="carrusel" data-carrusel>
+        <div class="carrusel__pista">
+          <figure><img src="media/g-familia.jpg" alt="Madre e hija sonriendo abrazadas" loading="lazy" width="1200" height="800"></figure>
+          <figure class="alta"><img src="media/g-nino-cepillo.jpg" alt="Niña sonriendo mientras se cepilla" loading="lazy" width="1200" height="1800"></figure>
+          <figure><img src="media/alineadores.jpg" alt="Joven colocándose un alineador transparente" loading="lazy" width="1400" height="933"></figure>
+          <figure class="alta"><img src="media/g-dentista.jpg" alt="Odontóloga sonriendo con los brazos cruzados" loading="lazy" width="1200" height="1697"></figure>
+          <figure><img src="media/ninos.jpg" alt="Odontólogo revisando los dientes de un niño" loading="lazy" width="1400" height="932"></figure>
+          <figure><img src="media/g-sonrisa-nino.jpg" alt="Niño riendo" loading="lazy" width="1200" height="675"></figure>
+          <figure class="alta"><img src="media/g-control.jpg" alt="Odontólogo revisando a una paciente" loading="lazy" width="1200" height="1800"></figure>
+          <figure><img src="media/g-equipo.jpg" alt="Equipo dental atendiendo a una paciente sonriente" loading="lazy" width="1200" height="802"></figure>
+        </div>
+      </div>
     </section>
 
     <!-- SERVICIOS -->
     <section class="servicios" id="servicios">
       <div class="wrap">
-        <div class="cabeza">
+        <div class="cabeza" data-anim>
           <h2>Todo lo que tu sonrisa necesita, en un solo lugar.</h2>
           <p>Elige un servicio para ver en qué consiste. Desde ahí puedes reservarlo o preguntarnos por WhatsApp.</p>
         </div>
@@ -103,15 +155,37 @@
       </div>
     </section>
 
+    <!-- ANTES / DESPUÉS -->
+    <section class="ad">
+      <div class="wrap ad__in">
+        <div class="ad__txt" data-anim>
+          <h2>Desliza y mira la diferencia.</h2>
+          <p>Un blanqueamiento bien hecho aclara varios tonos sin dañar el esmalte. Arrastra la barra para comparar.</p>
+          <button class="btn btn--azul" type="button" data-ir-servicio="blanqueamiento">Ver blanqueamiento</button>
+          <p class="ad__nota">Simulación referencial. El resultado depende de cada paciente.</p>
+        </div>
+        <div class="comparador" data-comparador style="--pos: 50%" data-anim="revela">
+          <img src="media/estetica.jpg" alt="Sonrisa después del blanqueamiento" width="1400" height="933" loading="lazy">
+          <div class="comparador__antes">
+            <img src="media/estetica-antes.jpg" alt="Sonrisa antes del blanqueamiento" width="1400" height="933" loading="lazy">
+          </div>
+          <span class="comparador__et comparador__et--a">Antes</span>
+          <span class="comparador__et comparador__et--d">Después</span>
+          <div class="comparador__barra" aria-hidden="true"><span><svg class="ico" viewBox="0 0 24 24"><path d="m9 6-6 6 6 6M15 6l6 6-6 6"/></svg></span></div>
+          <input class="comparador__rango" type="range" min="0" max="100" value="50" aria-label="Comparar antes y después">
+        </div>
+      </div>
+    </section>
+
     <!-- PRIMERA VISITA -->
     <section class="visita" id="visita">
       <div class="wrap visita__in">
-        <figure class="visita__foto">
-          <img src="media/consultorio.jpg" alt="Consultorio dental equipado y luminoso" width="1400" height="936" loading="lazy">
+        <figure class="visita__foto" data-anim="revela">
+          <img src="media/g-revision.jpg" alt="Odontóloga mostrando un espejo a su paciente durante la evaluación" width="1200" height="800" loading="lazy" data-parallax="0.06">
         </figure>
-        <div class="visita__txt">
+        <div class="visita__txt" data-anim>
           <h2>Tu primera visita, sin sorpresas.</h2>
-          <ol class="pasos">
+          <ol class="pasos" data-pasos>
             <li>
               <h3>Evaluación</h3>
               <p>Revisamos tus dientes y encías con calma y, si hace falta, tomamos radiografías.</p>
@@ -129,10 +203,29 @@
       </div>
     </section>
 
+    <!-- CONSULTORIO -->
+    <section class="consultorio" aria-labelledby="t-consultorio">
+      <div class="wrap">
+        <div class="cabeza" data-anim>
+          <h2 id="t-consultorio">Un consultorio pensado para que estés tranquilo.</h2>
+          <p>Ambientes limpios y luminosos, instrumental esterilizado en cada atención y equipos modernos.</p>
+        </div>
+        <div class="bento">
+          <figure class="bento__a" data-anim="revela"><img src="media/g-espera.jpg" alt="Sala de espera amplia y luminosa" loading="lazy" width="1200" height="779"><figcaption>Sala de espera</figcaption></figure>
+          <figure class="bento__b" data-anim="revela"><img src="media/g-sillon.jpg" alt="Sillón dental moderno" loading="lazy" width="1200" height="800"><figcaption>Sillón dental</figcaption></figure>
+          <figure class="bento__c" data-anim="revela"><img src="media/g-herramientas.jpg" alt="Espejo y explorador dental" loading="lazy" width="1200" height="1600"><figcaption>Instrumental esterilizado</figcaption></figure>
+          <figure class="bento__d" data-anim="revela"><img src="media/g-implante.jpg" alt="Implante dental con su corona" loading="lazy" width="1200" height="1800"><figcaption>Implantes</figcaption></figure>
+          <figure class="bento__e" data-anim="revela"><img src="media/consultorio.jpg" alt="Consultorio dental equipado" loading="lazy" width="1400" height="936"><figcaption>Consultorio</figcaption></figure>
+          <figure class="bento__f" data-anim="revela"><img src="media/g-cepillos.jpg" alt="Cepillos de dientes de bambú en un frasco" loading="lazy" width="1200" height="1200"><figcaption>Prevención en casa</figcaption></figure>
+        </div>
+        <p class="nota-fotos">Imágenes referenciales.</p>
+      </div>
+    </section>
+
     <!-- RESERVAR -->
     <section class="reservar" id="reservar">
       <div class="wrap reservar__in">
-        <div class="reservar__txt">
+        <div class="reservar__txt" data-anim>
           <h2>Reserva tu cita en línea.</h2>
           <p>Elige el servicio, el día y la hora. Tu solicitud llega directo a nuestro WhatsApp y te confirmamos la cita por ahí.</p>
         </div>
@@ -198,11 +291,11 @@
     <!-- WHATSAPP -->
     <section class="wa" id="whatsapp">
       <div class="wrap wa__in">
-        <div class="wa__txt">
+        <div class="wa__txt" data-anim>
           <h2>¿Prefieres escribirnos?</h2>
           <p>Toca un mensaje y se abre WhatsApp con el texto listo. También puedes escribir el tuyo.</p>
         </div>
-        <div class="wa__chat">
+        <div class="wa__chat" data-anim>
           <div class="chips" data-chips></div>
           <form class="wa__libre" data-wa-libre>
             <label class="sr" for="wa-texto">Tu mensaje</label>
@@ -218,10 +311,10 @@
     <!-- CIERRE -->
     <section class="cierre">
       <div class="wrap cierre__in">
-        <figure class="cierre__foto">
+        <figure class="cierre__foto" data-anim="revela">
           <img src="media/sonrisa.jpg" alt="Mujer sonriendo" width="1400" height="933" loading="lazy">
         </figure>
-        <div class="cierre__txt">
+        <div class="cierre__txt" data-anim>
           <h2>Tu próxima sonrisa empieza con una evaluación.</h2>
           <a class="btn btn--blanco" href="#reservar" data-preselect="evaluacion">Reservar evaluación</a>
         </div>

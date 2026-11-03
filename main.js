@@ -153,10 +153,17 @@ const horarioEl = $('[data-horario]');
 })();
 
 // ===== Carga =====
-window.addEventListener('load', () => {
-  setTimeout(() => document.body.classList.remove('cargando'), reduce ? 0 : 650);
-});
-setTimeout(() => document.body.classList.remove('cargando'), 3000);
+// La sonrisa se dibuja en ~1.6 s; luego la pantalla sube y entra la portada
+const inicio = performance.now();
+let cargaHecha = false;
+function terminarCarga() {
+  if (cargaHecha) return;
+  cargaHecha = true;
+  document.body.classList.remove('cargando');
+  setTimeout(() => $('.hero').classList.add('listo'), reduce ? 0 : 280);
+}
+window.addEventListener('load', () => setTimeout(terminarCarga, reduce ? 0 : Math.max(0, 1750 - (performance.now() - inicio))));
+setTimeout(terminarCarga, 4000);
 
 // ===== Menú móvil =====
 const btnMenu = $('.top__menu');
@@ -406,11 +413,132 @@ $('[data-wa-libre]').addEventListener('submit', (e) => {
 });
 
 // ===== Aparición al hacer scroll =====
-if (!reduce && 'IntersectionObserver' in window) {
+const anims = $$('[data-anim]');
+anims.forEach((el) => {
+  if (el.dataset.anim !== 'revela') [...el.children].forEach((c, i) => c.style.setProperty('--i', i));
+});
+// Las fotos del bento entran en cascada
+$$('.bento [data-anim]').forEach((el, i) => el.style.setProperty('--i', i % 3));
+if (reduce || !('IntersectionObserver' in window)) {
+  anims.forEach((el) => el.classList.add('visto'));
+} else {
   const io = new IntersectionObserver((ents) => ents.forEach((en) => {
     if (en.isIntersecting) { en.target.classList.add('visto'); io.unobserve(en.target); }
-  }), { rootMargin: '0px 0px -12% 0px' });
-  $$('.cabeza, .visita__txt, .visita__foto, .reservar__txt, .wa__txt, .cierre__txt').forEach((el) => {
-    el.classList.add('aparece'); io.observe(el);
-  });
+  }), { rootMargin: '0px 0px -10% 0px' });
+  anims.forEach((el) => io.observe(el));
 }
+
+// ===== Cinta de servicios: se duplica para que el giro no tenga corte =====
+const pista = $('.cinta__pista');
+pista.insertAdjacentHTML('beforeend', pista.innerHTML.replace(/<li>/g, '<li aria-hidden="true">'));
+
+// ===== Carrusel de sonrisas: avanza solo y se puede arrastrar =====
+(function carrusel() {
+  const cont = $('[data-carrusel]');
+  const p = $('.carrusel__pista', cont);
+  p.insertAdjacentHTML('beforeend', p.innerHTML.replace(/<figure/g, '<figure aria-hidden="true"').replace(/alt="[^"]*"/g, 'alt=""'));
+  let x = 0, vel = reduce ? 0 : 0.45, arrastre = null, pausa = false, visible = false, ultimo = 0;
+  const mitad = () => p.scrollWidth / 2;
+  const envolver = () => { const m = mitad(); if (m) { x %= m; if (x > 0) x -= m; } };
+  function cuadro(t) {
+    const dt = ultimo ? Math.min(48, t - ultimo) : 16;
+    ultimo = t;
+    if (!arrastre && !pausa) x -= vel * dt / 16;
+    envolver();
+    p.style.transform = `translate3d(${x}px,0,0)`;
+    if (visible) requestAnimationFrame(cuadro); else ultimo = 0;
+  }
+  new IntersectionObserver(([en]) => {
+    const antes = visible; visible = en.isIntersecting;
+    if (visible && !antes) requestAnimationFrame(cuadro);
+  }).observe(cont);
+  cont.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') pausa = true; });
+  cont.addEventListener('pointerleave', () => { pausa = false; });
+  cont.addEventListener('pointerdown', (e) => {
+    arrastre = { inicio: e.clientX, x0: x, v: 0, ult: e.clientX };
+    cont.classList.add('arrastrando');
+    cont.setPointerCapture(e.pointerId);
+  });
+  cont.addEventListener('pointermove', (e) => {
+    if (!arrastre) return;
+    arrastre.v = e.clientX - arrastre.ult; arrastre.ult = e.clientX;
+    x = arrastre.x0 + (e.clientX - arrastre.inicio);
+  });
+  const soltar = () => {
+    if (!arrastre) return;
+    // inercia corta al soltar
+    let v = arrastre.v;
+    arrastre = null; cont.classList.remove('arrastrando');
+    (function inercia() { if (Math.abs(v) < 0.3) return; x += v; v *= 0.92; requestAnimationFrame(inercia); })();
+  };
+  cont.addEventListener('pointerup', soltar);
+  cont.addEventListener('pointercancel', soltar);
+})();
+
+// ===== Parallax suave en fotos grandes =====
+const parallax = $$('[data-parallax]');
+if (!reduce && parallax.length) {
+  let pendiente = false;
+  const mover = () => {
+    pendiente = false;
+    const vh = innerHeight;
+    parallax.forEach((img) => {
+      const r = img.parentElement.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > vh) return;
+      const d = (r.top + r.height / 2 - vh / 2) * parseFloat(img.dataset.parallax);
+      img.style.transform = `translate3d(0,${d.toFixed(1)}px,0)`;
+    });
+  };
+  parallax.forEach((img) => { if (!img.closest('.hero__marco')) img.style.scale = '1.14'; });
+  addEventListener('scroll', () => { if (!pendiente) { pendiente = true; requestAnimationFrame(mover); } }, { passive: true });
+  mover();
+}
+
+// ===== Pasos de la primera visita: la línea avanza con el scroll =====
+const pasos = $('[data-pasos]');
+if (pasos) {
+  const items = $$('li', pasos);
+  const actualizar = () => {
+    const r = pasos.getBoundingClientRect();
+    const p = Math.min(1, Math.max(0, (innerHeight * 0.62 - r.top) / r.height));
+    pasos.style.setProperty('--p', p.toFixed(3));
+    items.forEach((li) => li.classList.toggle('activo', li.getBoundingClientRect().top < innerHeight * 0.62));
+  };
+  addEventListener('scroll', () => requestAnimationFrame(actualizar), { passive: true });
+  actualizar();
+}
+
+// ===== Comparador antes / después =====
+const comp = $('[data-comparador]');
+if (comp) {
+  const rango = $('.comparador__rango', comp);
+  const poner = (v) => { comp.style.setProperty('--pos', v + '%'); rango.value = v; };
+  rango.addEventListener('input', () => poner(rango.value));
+  // Al aparecer, la barra se mueve sola para enseñar que se puede arrastrar
+  if (!reduce) {
+    let tocado = false;
+    rango.addEventListener('pointerdown', () => (tocado = true), { once: true });
+    new IntersectionObserver(([en], obs) => {
+      if (!en.isIntersecting) return;
+      obs.disconnect();
+      const pasos_ = [[50, 22], [22, 78], [78, 50]];
+      let i = 0, t0 = null;
+      setTimeout(function paso(t) {
+        requestAnimationFrame(function f(t) {
+          if (tocado) return;
+          t0 ??= t;
+          const k = Math.min(1, (t - t0) / 700), e = k < 0.5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2;
+          const [a, b] = pasos_[i];
+          poner(Math.round(a + (b - a) * e));
+          if (k < 1) requestAnimationFrame(f);
+          else if (++i < pasos_.length) { t0 = null; requestAnimationFrame(f); }
+        });
+      }, 700);
+    }, { threshold: 0.6 }).observe(comp);
+  }
+}
+
+$$('[data-ir-servicio]').forEach((b) => b.addEventListener('click', () => {
+  mostrar(b.dataset.irServicio);
+  $('#servicios').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+}));
