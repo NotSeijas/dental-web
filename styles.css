@@ -247,7 +247,7 @@ body:not(.cargando) .carga__in { opacity: 0; transform: translateY(-60px); }
 @media (max-width: 860px) { .sonrisas__cab { grid-template-columns: 1fr; } }
 
 /* ===== Antes / después ===== */
-.ad { padding-block: var(--seccion); }
+.ad { padding-block: var(--seccion); background: #fff; }
 .ad__in { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 40px clamp(32px, 6vw, 96px); align-items: center; }
 .ad h2 { font-size: clamp(2.1rem, 4.6vw, 3.6rem); color: var(--azul-hondo); }
 .ad__txt { display: grid; gap: 18px; justify-items: start; }
@@ -549,6 +549,152 @@ body:not(.cargando) .carga__in { opacity: 0; transform: translateY(-60px); }
 .wa-flota svg { width: 32px; height: 32px; fill: currentColor; }
 .wa-flota:active { transform: scale(0.94); }
 @media (hover: hover) { .wa-flota:hover { transform: translateY(-2px); } }
+
+/* ===== Confianza (bajo los botones del hero) ===== */
+.confianza { list-style: none; margin: 30px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 22px; color: #c3dbeb; font-size: 0.93rem; font-weight: 500; }
+.confianza li { display: inline-flex; align-items: center; gap: 8px; }
+.confianza .ico { color: var(--hoja); width: 19px; height: 19px; }
+.confianza { opacity: 0; transform: translateY(12px); transition: opacity 800ms var(--ease) 480ms, transform 800ms var(--ease) 480ms; }
+.listo .confianza { opacity: 1; transform: none; }
+
+/* ===== Dientín colgando del hilo dental ===== */
+.colgante {
+  position: absolute; z-index: 4; top: calc(-1 * clamp(40px, 6vw, 80px)); left: 55.5%;
+  width: 0; height: 0; pointer-events: none;
+}
+.colgante__pendulo {
+  --largo: 150px;
+  position: absolute; left: 0; top: 0; transform-origin: 0 0;
+  transform: translateY(calc(-1 * var(--largo) - 160px)) rotate(var(--ang, 0deg));
+}
+.listo .colgante__pendulo { transform: rotate(var(--ang, 0deg)); }
+.colgante__pendulo.bajando { transition: transform 1200ms cubic-bezier(0.34, 1.35, 0.64, 1) 450ms; }
+.colgante__hilo {
+  position: absolute; left: -1px; top: 0; width: 2px; height: var(--largo);
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,0.95) 0 6px, rgba(201,240,234,0.85) 6px 12px);
+  border-radius: 2px; box-shadow: 0 0 6px rgba(255, 255, 255, 0.25);
+}
+.dientin {
+  position: absolute; left: -58px; top: calc(var(--largo) - 20px); width: 116px; height: 118px;
+  padding: 0; border: 0; background: none; cursor: grab; pointer-events: auto;
+  filter: drop-shadow(0 14px 16px rgba(3, 20, 38, 0.45));
+  -webkit-tap-highlight-color: transparent;
+}
+.dientin svg { width: 100%; height: 100%; overflow: visible; }
+.dientin__cuerpo { fill: #f7fcff; stroke: var(--tinta); stroke-width: 5; stroke-linejoin: round; }
+.dientin__sombra { fill: #cfe6f4; }
+.dientin__luz { fill: none; stroke: #fff; stroke-width: 5; stroke-linecap: round; }
+.dientin__brazo { fill: none; stroke: var(--tinta); stroke-width: 5; stroke-linecap: round; }
+.dientin__mano { fill: #f7fcff; stroke: var(--tinta); stroke-width: 4; }
+.dientin__brazo--i, .dientin__mano--i { transform-origin: 26px 66px; animation: saluda 1.6s ease-in-out infinite; }
+.dientin__ojos ellipse { fill: var(--tinta); }
+.dientin__pupila { fill: #fff; }
+.dientin__ojos { transform-box: fill-box; transform-origin: center; animation: parpadea 4.2s infinite; }
+.dientin__cachete { fill: #ff8fa8; opacity: 0.55; }
+.dientin__boca { fill: #e2456b; stroke: var(--tinta); stroke-width: 4; stroke-linejoin: round; }
+.dientin__lengua { fill: #ff8fa8; }
+.dientin__nudo { fill: #fff; stroke: var(--tinta); stroke-width: 2.5; stroke-linejoin: round; }
+.dientin__brillos path { fill: #ffd23f; stroke: var(--tinta); stroke-width: 1.6; stroke-linejoin: round; transform-box: fill-box; transform-origin: center; animation: titilaB 1.8s ease-in-out var(--d) infinite; }
+@keyframes titilaB { 0%, 100% { transform: scale(0.6) rotate(0deg); opacity: 0.5; } 50% { transform: scale(1.15) rotate(25deg); opacity: 1; } }
+@keyframes saluda { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-22deg); } }
+@keyframes parpadea { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+.dientin.agarrado { cursor: grabbing; }
+.dientin.gira svg { animation: giro 700ms cubic-bezier(0.34, 1.4, 0.64, 1); }
+@keyframes giro { from { transform: rotate(0deg) scale(1); } 50% { transform: rotate(200deg) scale(1.12); } to { transform: rotate(360deg) scale(1); } }
+.colgante__globo {
+  position: absolute; left: 56px; top: calc(var(--largo) - 8px); white-space: nowrap;
+  padding: 7px 12px; border-radius: 14px 14px 14px 4px; background: #fff; color: var(--tinta);
+  font-family: var(--display); font-weight: 700; font-size: 0.92rem;
+  box-shadow: 0 10px 24px -10px rgba(3, 20, 38, 0.5);
+  opacity: 0; transform: translateY(6px) scale(0.9); transform-origin: 0 100%;
+  transition: opacity 250ms var(--ease), transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.colgante__globo.ver { opacity: 1; transform: none; }
+
+@media (max-width: 860px) {
+  .colgante { left: auto; right: 42px; }
+  .colgante__pendulo { --largo: 96px; }
+  .dientin { width: 66px; height: 68px; left: -33px; top: calc(var(--largo) - 12px); }
+  .colgante__globo { left: auto; right: 40px; border-radius: 14px 14px 4px 14px; transform-origin: 100% 100%; font-size: 0.82rem; }
+}
+
+/* ===== Gotita, la pasta dental que camina ===== */
+.gotita {
+  --x: 0px; --dir: 1;
+  position: fixed; left: 0; bottom: 14px; z-index: 45; width: 76px; height: 86px;
+  transform: translateX(var(--x)); pointer-events: none;
+  transition: opacity 400ms var(--ease);
+}
+body.cargando .gotita { opacity: 0; }
+.gotita__cuerpo {
+  display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto;
+  transform: scaleX(var(--dir)); transition: transform 250ms var(--ease);
+  filter: drop-shadow(0 8px 10px rgba(13, 34, 52, 0.28));
+  -webkit-tap-highlight-color: transparent;
+}
+.gotita svg { width: 100%; height: 100%; overflow: visible; }
+.gotita__masa { transform-box: fill-box; transform-origin: 50% 100%; animation: respiraG 2.6s ease-in-out infinite; }
+.gotita__borde { fill: none; stroke: var(--tinta); stroke-width: 4; stroke-linejoin: round; }
+.gotita__luz { fill: none; stroke: #fff; stroke-width: 3.5; stroke-linecap: round; opacity: 0.9; }
+.gotita__ojos ellipse { fill: var(--tinta); }
+.gotita__pupila { fill: #fff; }
+.gotita__ojos { transform-box: fill-box; transform-origin: center; animation: parpadea 3.6s 1s infinite; }
+.gotita__cachete { fill: #ff8fa8; opacity: 0.6; }
+.gotita__boca { fill: none; stroke: var(--tinta); stroke-width: 3.5; stroke-linecap: round; }
+.gotita__pie { fill: #fff; stroke: var(--tinta); stroke-width: 3.5; transform-box: fill-box; transform-origin: center; }
+@keyframes respiraG { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.04, 0.96); } }
+/* caminando: rebota y mueve los pies */
+.gotita.camina .gotita__masa { animation: salto 380ms ease-in-out infinite; }
+.gotita.camina .gotita__pie--i { animation: pieI 380ms ease-in-out infinite; }
+.gotita.camina .gotita__pie--d { animation: pieD 380ms ease-in-out infinite; }
+@keyframes salto { 0%, 100% { transform: translateY(0) scale(1.03, 0.97) rotate(-3deg); } 50% { transform: translateY(-9px) scale(0.97, 1.04) rotate(3deg); } }
+@keyframes pieI { 0%, 100% { transform: translate(-3px, 0); } 50% { transform: translate(4px, -5px); } }
+@keyframes pieD { 0%, 100% { transform: translate(4px, -5px); } 50% { transform: translate(-3px, 0); } }
+.gotita.brinca .gotita__masa { animation: brinco 650ms cubic-bezier(0.34, 1.4, 0.64, 1); }
+@keyframes brinco { 0% { transform: scale(1.15, 0.85); } 40% { transform: translateY(-34px) scale(0.92, 1.1) rotate(-12deg); } 70% { transform: translateY(0) scale(1.12, 0.88); } 100% { transform: none; } }
+.gotita.feliz .gotita__boca { d: path("M44 76 Q52 90 60 76"); }
+
+.gotita__globo {
+  position: absolute; bottom: 92px; left: 10px; width: max-content; max-width: 220px; margin: 0;
+  padding: 10px 14px; border-radius: 16px 16px 16px 4px; background: #fff; color: var(--tinta);
+  font-family: var(--display); font-weight: 600; font-size: 0.93rem; line-height: 1.3;
+  box-shadow: 0 12px 30px -12px rgba(13, 34, 52, 0.45), 0 0 0 1.5px var(--linea);
+  opacity: 0; transform: translateY(8px) scale(0.9); transform-origin: 0 100%;
+  transition: opacity 250ms var(--ease), transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.gotita__globo.ver { opacity: 1; transform: none; }
+.gotita.a-la-derecha .gotita__globo { left: auto; right: 10px; border-radius: 16px 16px 4px 16px; transform-origin: 100% 100%; }
+@media (max-width: 860px) {
+  .gotita { width: 56px; height: 64px; bottom: 10px; }
+  .gotita__globo { bottom: 68px; font-size: 0.84rem; max-width: 190px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .colgante__pendulo { transform: none; }
+}
+
+/* ===== Preguntas frecuentes ===== */
+.faq { padding-block: var(--seccion); background: #fff; }
+.faq__in { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 40px clamp(32px, 6vw, 96px); align-items: start; }
+.faq h2 { font-size: clamp(2.1rem, 4.6vw, 3.6rem); color: var(--azul-hondo); }
+.faq__txt { display: grid; gap: 18px; justify-items: start; position: sticky; top: 110px; }
+.faq__txt p { color: var(--tinta-2); max-width: 26rem; }
+.faq__lista { border-top: 1px solid var(--linea); }
+.pregunta { border-bottom: 1px solid var(--linea); }
+.pregunta summary {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px 4px; cursor: pointer; list-style: none;
+  font-family: var(--display); font-weight: 600; font-size: clamp(1.1rem, 1.7vw, 1.35rem); color: var(--azul-hondo);
+}
+.pregunta summary::-webkit-details-marker { display: none; }
+.pregunta summary::after {
+  content: ""; flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--hoja-clara) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f4c7a' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M12 6v12M6 12h12'/%3E%3C/svg%3E") center / 18px no-repeat;
+  transition: transform 350ms var(--ease), background-color 250ms var(--ease);
+}
+.pregunta[open] summary::after { transform: rotate(135deg); background-color: var(--hoja); }
+.pregunta__r { padding: 0 52px 22px 4px; color: var(--tinta-2); }
+.pregunta[open] .pregunta__r { animation: sube 450ms var(--ease); }
+@media (max-width: 860px) { .faq__in { grid-template-columns: 1fr; } .faq__txt { position: static; } .pregunta__r { padding-right: 4px; } }
+
+.ad { background: #fff; }
 
 /* ===== Aparición al hacer scroll ===== */
 .js [data-anim]:not([data-anim=revela]) > * { opacity: 0; transform: translateY(26px); filter: blur(5px); transition: opacity 900ms var(--ease), transform 900ms var(--ease), filter 900ms var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }

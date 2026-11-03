@@ -43,9 +43,9 @@
       </a>
       <nav class="top__nav" aria-label="Principal">
         <a href="#servicios">Servicios</a>
-        <a href="#visita">Tu primera visita</a>
         <a href="#reservar">Reservar</a>
-        <a href="#whatsapp">WhatsApp</a>
+        <a href="#visita">Tu primera visita</a>
+        <a href="#preguntas">Preguntas</a>
         <a href="#contacto">Contacto</a>
       </nav>
       <a class="btn btn--azul top__cta" href="#reservar">Reservar cita</a>
@@ -53,8 +53,9 @@
     </div>
     <nav class="menu-movil" id="menu-movil" aria-label="Menú móvil" hidden>
       <a href="#servicios">Servicios</a>
-      <a href="#visita">Tu primera visita</a>
       <a href="#reservar">Reservar cita</a>
+      <a href="#visita">Tu primera visita</a>
+      <a href="#preguntas">Preguntas frecuentes</a>
       <a href="#whatsapp">Escribir por WhatsApp</a>
       <a href="#contacto">Horario y contacto</a>
     </nav>
@@ -62,8 +63,43 @@
 
   <main>
     <!-- INICIO -->
-    <section class="hero" id="inicio">
+    <section class="hero" id="inicio" data-gotita-dice="¡Hola! Soy Gotita. Te acompaño por la página.">
       <div class="wrap hero__in">
+        <!-- Dientín: cuelga del hilo dental y se balancea -->
+        <div class="colgante" data-colgante aria-hidden="true">
+          <div class="colgante__pendulo" data-pendulo>
+            <span class="colgante__hilo"></span>
+            <button class="dientin" type="button" tabindex="-1" data-dientin>
+              <svg viewBox="-14 -6 148 150">
+                <g class="dientin__brillos">
+                  <path style="--d:0s" d="M-2 30 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z"/>
+                  <path style="--d:.7s" d="M120 22 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 Z"/>
+                  <path style="--d:1.3s" d="M116 108 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z"/>
+                  <path style="--d:.4s" d="M2 112 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 Z"/>
+                </g>
+                <path class="dientin__brazo dientin__brazo--i" d="M26 66 C12 64 6 54 8 46"/>
+                <circle class="dientin__mano dientin__mano--i" cx="8" cy="44" r="5.5"/>
+                <path class="dientin__brazo dientin__brazo--d" d="M94 66 C108 68 114 78 110 88"/>
+                <circle class="dientin__mano dientin__mano--d" cx="110" cy="90" r="5.5"/>
+                <path class="dientin__cuerpo" d="M20 42 C20 16 44 8 60 19 C76 8 100 16 100 42 C100 62 94 74 92 92 C90 110 88 130 78 130 C68 130 70 102 60 102 C50 102 52 130 42 130 C32 130 30 110 28 92 C26 74 20 62 20 42 Z"/>
+                <path class="dientin__sombra" d="M86 22 C96 28 98 46 94 62 C92 74 88 82 87 96 C86 84 88 70 90 58 C92 44 92 32 86 22 Z"/>
+                <path class="dientin__luz" d="M32 30 C34 22 42 18 48 20"/>
+                <g class="dientin__ojos">
+                  <ellipse cx="47" cy="52" rx="5.5" ry="7.5"/>
+                  <ellipse cx="73" cy="52" rx="5.5" ry="7.5"/>
+                  <circle class="dientin__pupila" cx="49" cy="49" r="2"/>
+                  <circle class="dientin__pupila" cx="75" cy="49" r="2"/>
+                </g>
+                <circle class="dientin__cachete" cx="37" cy="66" r="6"/>
+                <circle class="dientin__cachete" cx="83" cy="66" r="6"/>
+                <path class="dientin__boca" d="M50 66 Q60 82 70 66 Z"/>
+                <path class="dientin__lengua" d="M55 73 Q60 70 65 73 Q60 78 55 73 Z"/>
+                <path class="dientin__nudo" d="M60 19 C56 12 52 8 54 4 C58 2 60 6 60 10 C60 6 62 2 66 4 C68 8 64 12 60 19 Z"/>
+              </svg>
+            </button>
+            <span class="colgante__globo" data-colgante-globo>¡Hola!</span>
+          </div>
+        </div>
         <div class="hero__txt">
           <h1>
             <span class="linea"><span>Sonrisas sanas,</span></span>
@@ -80,6 +116,11 @@
               Escribir por WhatsApp
             </a>
           </div>
+          <ul class="confianza">
+            <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.4 3.1 8.2 7.5 9.5 4.4-1.3 7.5-5.1 7.5-9.5V6Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>Presupuesto antes de empezar</li>
+            <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9.5" r="2.4"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M14.5 15.2c.8-.6 1.6-.8 2.5-.8 2 0 3.5 1.4 4 3.6"/></svg>Niños y adultos</li>
+            <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8.5a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 14.5 6 8.5Z"/><path d="M10 19.5a2.2 2.2 0 0 0 4 0"/></svg>Recordatorios por WhatsApp</li>
+          </ul>
         </div>
         <figure class="hero__foto">
           <div class="hero__marco">
@@ -101,28 +142,8 @@
       </div>
     </section>
 
-    <!-- SONRISAS -->
-    <section class="sonrisas" aria-labelledby="t-sonrisas">
-      <div class="wrap sonrisas__cab" data-anim>
-        <h2 id="t-sonrisas">Cada sonrisa tiene su historia.</h2>
-        <p>Niños, jóvenes y adultos: tratamos a cada paciente con calma y le explicamos todo antes de empezar.</p>
-      </div>
-      <div class="carrusel" data-carrusel>
-        <div class="carrusel__pista">
-          <figure><img src="media/g-familia.jpg" alt="Madre e hija sonriendo abrazadas" loading="lazy" width="1200" height="800"></figure>
-          <figure class="alta"><img src="media/g-nino-cepillo.jpg" alt="Niña sonriendo mientras se cepilla" loading="lazy" width="1200" height="1800"></figure>
-          <figure><img src="media/alineadores.jpg" alt="Joven colocándose un alineador transparente" loading="lazy" width="1400" height="933"></figure>
-          <figure class="alta"><img src="media/g-dentista.jpg" alt="Odontóloga sonriendo con los brazos cruzados" loading="lazy" width="1200" height="1697"></figure>
-          <figure><img src="media/ninos.jpg" alt="Odontólogo revisando los dientes de un niño" loading="lazy" width="1400" height="932"></figure>
-          <figure><img src="media/g-sonrisa-nino.jpg" alt="Niño riendo" loading="lazy" width="1200" height="675"></figure>
-          <figure class="alta"><img src="media/g-control.jpg" alt="Odontólogo revisando a una paciente" loading="lazy" width="1200" height="1800"></figure>
-          <figure><img src="media/g-equipo.jpg" alt="Equipo dental atendiendo a una paciente sonriente" loading="lazy" width="1200" height="802"></figure>
-        </div>
-      </div>
-    </section>
-
     <!-- SERVICIOS -->
-    <section class="servicios" id="servicios">
+    <section class="servicios" id="servicios" data-gotita-dice="¿Buscas algo en especial? Toca un servicio.">
       <div class="wrap">
         <div class="cabeza" data-anim>
           <h2>Todo lo que tu sonrisa necesita, en un solo lugar.</h2>
@@ -152,7 +173,7 @@
     </section>
 
     <!-- ANTES / DESPUÉS -->
-    <section class="ad">
+    <section class="ad" data-gotita-dice="¡Desliza la barra y mira qué blanquito!">
       <div class="wrap ad__in">
         <div class="ad__txt" data-anim>
           <h2>Desliza y mira la diferencia.</h2>
@@ -173,53 +194,8 @@
       </div>
     </section>
 
-    <!-- PRIMERA VISITA -->
-    <section class="visita" id="visita">
-      <div class="wrap visita__in">
-        <figure class="visita__foto" data-anim="revela">
-          <img src="media/g-revision.jpg" alt="Odontóloga mostrando un espejo a su paciente durante la evaluación" width="1200" height="800" loading="lazy" data-parallax="0.06">
-        </figure>
-        <div class="visita__txt" data-anim>
-          <h2>Tu primera visita, sin sorpresas.</h2>
-          <ol class="pasos" data-pasos>
-            <li>
-              <h3>Evaluación</h3>
-              <p>Revisamos tus dientes y encías con calma y, si hace falta, tomamos radiografías.</p>
-            </li>
-            <li>
-              <h3>Plan y presupuesto</h3>
-              <p>Te explicamos qué encontramos, las opciones que tienes y cuánto cuesta cada una, antes de empezar.</p>
-            </li>
-            <li>
-              <h3>Tratamiento</h3>
-              <p>Agendamos las sesiones a tu ritmo y te recordamos cada cita por WhatsApp.</p>
-            </li>
-          </ol>
-        </div>
-      </div>
-    </section>
-
-    <!-- CONSULTORIO -->
-    <section class="consultorio" aria-labelledby="t-consultorio">
-      <div class="wrap">
-        <div class="cabeza" data-anim>
-          <h2 id="t-consultorio">Un consultorio pensado para que estés tranquilo.</h2>
-          <p>Ambientes limpios y luminosos, instrumental esterilizado en cada atención y equipos modernos.</p>
-        </div>
-        <div class="bento">
-          <figure class="bento__a" data-anim="revela"><img src="media/g-espera.jpg" alt="Sala de espera amplia y luminosa" loading="lazy" width="1200" height="779"><figcaption>Sala de espera</figcaption></figure>
-          <figure class="bento__b" data-anim="revela"><img src="media/g-sillon.jpg" alt="Sillón dental moderno" loading="lazy" width="1200" height="800"><figcaption>Sillón dental</figcaption></figure>
-          <figure class="bento__c" data-anim="revela"><img src="media/g-herramientas.jpg" alt="Espejo y explorador dental" loading="lazy" width="1200" height="1600"><figcaption>Instrumental esterilizado</figcaption></figure>
-          <figure class="bento__d" data-anim="revela"><img src="media/g-implante.jpg" alt="Implante dental con su corona" loading="lazy" width="1200" height="1800"><figcaption>Implantes</figcaption></figure>
-          <figure class="bento__e" data-anim="revela"><img src="media/consultorio.jpg" alt="Consultorio dental equipado" loading="lazy" width="1400" height="936"><figcaption>Consultorio</figcaption></figure>
-          <figure class="bento__f" data-anim="revela"><img src="media/g-cepillos.jpg" alt="Cepillos de dientes de bambú en un frasco" loading="lazy" width="1200" height="1200"><figcaption>Prevención en casa</figcaption></figure>
-        </div>
-        <p class="nota-fotos">Imágenes referenciales.</p>
-      </div>
-    </section>
-
     <!-- RESERVAR -->
-    <section class="reservar" id="reservar">
+    <section class="reservar" id="reservar" data-gotita-dice="¡Reserva aquí, es rapidito!">
       <div class="wrap reservar__in">
         <div class="reservar__txt" data-anim>
           <h2>Reserva tu cita en línea.</h2>
@@ -284,8 +260,106 @@
       </div>
     </section>
 
+    <!-- PRIMERA VISITA -->
+    <section class="visita" id="visita" data-gotita-dice="Primero te revisan con calma, sin sustos.">
+      <div class="wrap visita__in">
+        <figure class="visita__foto" data-anim="revela">
+          <img src="media/g-revision.jpg" alt="Odontóloga mostrando un espejo a su paciente durante la evaluación" width="1200" height="800" loading="lazy" data-parallax="0.06">
+        </figure>
+        <div class="visita__txt" data-anim>
+          <h2>Tu primera visita, sin sorpresas.</h2>
+          <ol class="pasos" data-pasos>
+            <li>
+              <h3>Evaluación</h3>
+              <p>Revisamos tus dientes y encías con calma y, si hace falta, tomamos radiografías.</p>
+            </li>
+            <li>
+              <h3>Plan y presupuesto</h3>
+              <p>Te explicamos qué encontramos, las opciones que tienes y cuánto cuesta cada una, antes de empezar.</p>
+            </li>
+            <li>
+              <h3>Tratamiento</h3>
+              <p>Agendamos las sesiones a tu ritmo y te recordamos cada cita por WhatsApp.</p>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- SONRISAS -->
+    <section class="sonrisas" aria-labelledby="t-sonrisas" data-gotita-dice="¡Arrastra las fotos, son de sonrisas felices!">
+      <div class="wrap sonrisas__cab" data-anim>
+        <h2 id="t-sonrisas">Cada sonrisa tiene su historia.</h2>
+        <p>Niños, jóvenes y adultos: tratamos a cada paciente con calma y le explicamos todo antes de empezar.</p>
+      </div>
+      <div class="carrusel" data-carrusel>
+        <div class="carrusel__pista">
+          <figure><img src="media/g-familia.jpg" alt="Madre e hija sonriendo abrazadas" loading="lazy" width="1200" height="800"></figure>
+          <figure class="alta"><img src="media/g-nino-cepillo.jpg" alt="Niña sonriendo mientras se cepilla" loading="lazy" width="1200" height="1800"></figure>
+          <figure><img src="media/alineadores.jpg" alt="Joven colocándose un alineador transparente" loading="lazy" width="1400" height="933"></figure>
+          <figure class="alta"><img src="media/g-dentista.jpg" alt="Odontóloga sonriendo con los brazos cruzados" loading="lazy" width="1200" height="1697"></figure>
+          <figure><img src="media/ninos.jpg" alt="Odontólogo revisando los dientes de un niño" loading="lazy" width="1400" height="932"></figure>
+          <figure><img src="media/g-sonrisa-nino.jpg" alt="Niño riendo" loading="lazy" width="1200" height="675"></figure>
+          <figure class="alta"><img src="media/g-control.jpg" alt="Odontólogo revisando a una paciente" loading="lazy" width="1200" height="1800"></figure>
+          <figure><img src="media/g-equipo.jpg" alt="Equipo dental atendiendo a una paciente sonriente" loading="lazy" width="1200" height="802"></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONSULTORIO -->
+    <section class="consultorio" aria-labelledby="t-consultorio" data-gotita-dice="Todo limpiecito y brillante.">
+      <div class="wrap">
+        <div class="cabeza" data-anim>
+          <h2 id="t-consultorio">Un consultorio pensado para que estés tranquilo.</h2>
+          <p>Ambientes limpios y luminosos, instrumental esterilizado en cada atención y equipos modernos.</p>
+        </div>
+        <div class="bento">
+          <figure class="bento__a" data-anim="revela"><img src="media/g-espera.jpg" alt="Sala de espera amplia y luminosa" loading="lazy" width="1200" height="779"><figcaption>Sala de espera</figcaption></figure>
+          <figure class="bento__b" data-anim="revela"><img src="media/g-sillon.jpg" alt="Sillón dental moderno" loading="lazy" width="1200" height="800"><figcaption>Sillón dental</figcaption></figure>
+          <figure class="bento__c" data-anim="revela"><img src="media/g-herramientas.jpg" alt="Espejo y explorador dental" loading="lazy" width="1200" height="1600"><figcaption>Instrumental esterilizado</figcaption></figure>
+          <figure class="bento__d" data-anim="revela"><img src="media/g-implante.jpg" alt="Implante dental con su corona" loading="lazy" width="1200" height="1800"><figcaption>Implantes</figcaption></figure>
+          <figure class="bento__e" data-anim="revela"><img src="media/consultorio.jpg" alt="Consultorio dental equipado" loading="lazy" width="1400" height="936"><figcaption>Consultorio</figcaption></figure>
+          <figure class="bento__f" data-anim="revela"><img src="media/g-cepillos.jpg" alt="Cepillos de dientes de bambú en un frasco" loading="lazy" width="1200" height="1200"><figcaption>Prevención en casa</figcaption></figure>
+        </div>
+        <p class="nota-fotos">Imágenes referenciales.</p>
+      </div>
+    </section>
+
+    <!-- PREGUNTAS -->
+    <section class="faq" id="preguntas" data-gotita-dice="¿Alguna duda? Aquí te la resuelvo.">
+      <div class="wrap faq__in">
+        <div class="faq__txt" data-anim>
+          <h2>Preguntas frecuentes.</h2>
+          <p>Lo que más nos preguntan antes de la primera cita. Si tu duda no está aquí, escríbenos.</p>
+          <a class="btn btn--linea" data-wa="Hola, tengo una pregunta." href="#whatsapp" target="_blank" rel="noopener">Hacer otra pregunta</a>
+        </div>
+        <div class="faq__lista">
+          <details class="pregunta" name="faq" open>
+            <summary>¿Cómo funciona la reserva en línea?</summary>
+            <div class="pregunta__r"><p>Eliges el servicio, el día y la hora, y tu solicitud nos llega por WhatsApp. Te respondemos por ahí para confirmar tu cita.</p></div>
+          </details>
+          <details class="pregunta" name="faq">
+            <summary>¿Me dicen el precio antes de empezar?</summary>
+            <div class="pregunta__r"><p>Sí. En la evaluación te explicamos qué tratamiento necesitas y cuánto cuesta cada opción, antes de hacer cualquier procedimiento.</p></div>
+          </details>
+          <details class="pregunta" name="faq">
+            <summary>Tengo dolor, ¿me pueden atender pronto?</summary>
+            <div class="pregunta__r"><p>Escríbenos por WhatsApp contándonos qué sientes y te damos el horario libre más cercano.</p></div>
+          </details>
+          <details class="pregunta" name="faq">
+            <summary>¿Atienden a niños?</summary>
+            <div class="pregunta__r"><p>Sí. Tenemos odontopediatría: controles, limpiezas, sellantes y curaciones con mucha paciencia para que su visita sea tranquila.</p></div>
+          </details>
+          <details class="pregunta" name="faq">
+            <summary>¿Cada cuánto debo hacerme una limpieza?</summary>
+            <div class="pregunta__r"><p>Por lo general cada seis meses. En tu evaluación te diremos la frecuencia ideal para ti.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
     <!-- WHATSAPP -->
-    <section class="wa" id="whatsapp">
+    <section class="wa" id="whatsapp" data-gotita-dice="¿Prefieres escribir? Toca un mensaje.">
       <div class="wrap wa__in">
         <div class="wa__txt" data-anim>
           <h2>¿Prefieres escribirnos?</h2>
@@ -305,7 +379,7 @@
     </section>
 
     <!-- CIERRE -->
-    <section class="cierre">
+    <section class="cierre" data-gotita-dice="¡Nos vemos en tu cita!">
       <div class="wrap cierre__in">
         <figure class="cierre__foto" data-anim="revela">
           <img src="media/sonrisa.jpg" alt="Mujer sonriendo" width="1400" height="933" loading="lazy">
@@ -316,6 +390,7 @@
         </div>
       </div>
     </section>
+
   </main>
 
   <footer class="pie" id="contacto">
@@ -345,6 +420,43 @@
   <a class="wa-flota" data-wa="Hola, quisiera hacer una consulta." href="#whatsapp" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2a9.7 9.7 0 0 0-8.4 14.6L2.3 21.7l5-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-2.9-.4-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1c0 1.2.9 2.4 1 2.6.1.2 1.8 2.7 4.3 3.8 1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.5-.3Z"/></svg>
   </a>
+
+  <!-- Gotita: la gota de pasta dental que acompaña al visitante -->
+  <div class="gotita" data-gotita aria-hidden="true">
+    <p class="gotita__globo" data-gotita-globo></p>
+    <button class="gotita__cuerpo" type="button" tabindex="-1" data-gotita-btn>
+      <svg viewBox="0 0 100 112">
+        <defs>
+          <clipPath id="pasta"><path d="M16 96 C4 96 4 78 18 73 C9 63 18 48 33 51 C30 37 45 29 57 35 C60 23 70 15 82 6 C81 18 77 28 72 35 C86 38 93 51 85 61 C97 67 97 94 84 96 Z"/></clipPath>
+        </defs>
+        <g class="gotita__pies">
+          <ellipse class="gotita__pie gotita__pie--i" cx="36" cy="100" rx="9" ry="5"/>
+          <ellipse class="gotita__pie gotita__pie--d" cx="66" cy="100" rx="9" ry="5"/>
+        </g>
+        <g class="gotita__masa">
+          <g clip-path="url(#pasta)">
+            <rect x="0" y="0" width="100" height="112" fill="#ffffff"/>
+            <path d="M0 60 C20 50 40 74 60 62 C78 52 90 64 100 58 L100 70 C88 76 78 64 60 74 C40 86 20 62 0 72 Z" fill="#46c9bb"/>
+            <path d="M0 38 C22 30 40 48 62 40 C80 33 90 42 100 38 L100 46 C90 50 80 41 62 48 C40 56 22 38 0 46 Z" fill="#208ccd"/>
+            <path d="M0 82 C22 76 44 92 64 84 C82 77 92 86 100 82 L100 88 C92 92 82 83 64 90 C44 98 22 82 0 88 Z" fill="#208ccd"/>
+          </g>
+          <path class="gotita__borde" d="M16 96 C4 96 4 78 18 73 C9 63 18 48 33 51 C30 37 45 29 57 35 C60 23 70 15 82 6 C81 18 77 28 72 35 C86 38 93 51 85 61 C97 67 97 94 84 96 Z"/>
+          <path class="gotita__luz" d="M24 80 C22 76 24 72 28 71"/>
+          <g class="gotita__cara">
+            <g class="gotita__ojos">
+              <ellipse cx="42" cy="68" rx="4.5" ry="6"/>
+              <ellipse cx="62" cy="68" rx="4.5" ry="6"/>
+              <circle class="gotita__pupila" cx="43.5" cy="65.5" r="1.6"/>
+              <circle class="gotita__pupila" cx="63.5" cy="65.5" r="1.6"/>
+            </g>
+            <circle class="gotita__cachete" cx="33" cy="78" r="4.5"/>
+            <circle class="gotita__cachete" cx="71" cy="78" r="4.5"/>
+            <path class="gotita__boca" d="M46 78 Q52 86 58 78"/>
+          </g>
+        </g>
+      </svg>
+    </button>
+  </div>
 
   <script src="main.js"></script>
 </body>

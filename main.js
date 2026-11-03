@@ -542,3 +542,187 @@ $$('[data-ir-servicio]').forEach((b) => b.addEventListener('click', () => {
   mostrar(b.dataset.irServicio);
   $('#servicios').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
 }));
+
+// ===== Dientín: cuelga del hilo dental y se balancea =====
+(function dientin() {
+  const pendulo = $('[data-pendulo]');
+  if (!pendulo) return;
+  const diente = $('[data-dientin]', pendulo);
+  const globo = $('[data-colgante-globo]');
+  const frases = ['¡Hola!', '¡Wiii!', '¡Me mareo!', '¡Usa hilo dental!', '¡Sonríe!', '¡Otra vez!'];
+  let ang = 0, vel = 0, activo = false, agarre = null, tGlobo;
+
+  const decir = (txt) => {
+    globo.textContent = txt;
+    globo.classList.add('ver');
+    clearTimeout(tGlobo);
+    tGlobo = setTimeout(() => globo.classList.remove('ver'), 1800);
+  };
+
+  // Baja colgando cuando termina la carga
+  pendulo.classList.add('bajando');
+  const empezar = () => {
+    pendulo.classList.remove('bajando');
+    if (reduce) return;
+    activo = true;
+    vel = 2.2; // empujoncito inicial
+    decir('¡Hola!');
+    requestAnimationFrame(paso);
+  };
+  new MutationObserver((m, obs) => {
+    if ($('.hero').classList.contains('listo')) { obs.disconnect(); setTimeout(empezar, 1500); }
+  }).observe($('.hero'), { attributes: true, attributeFilter: ['class'] });
+
+  // Péndulo amortiguado; el hero fuera de pantalla lo pausa
+  let ultimo = 0, visible = true;
+  new IntersectionObserver(([en]) => {
+    const antes = visible; visible = en.isIntersecting;
+    if (visible && !antes && activo) { ultimo = 0; requestAnimationFrame(paso); }
+  }).observe($('.hero'));
+  function paso(t) {
+    const dt = ultimo ? Math.min(0.033, (t - ultimo) / 1000) : 0.016;
+    ultimo = t;
+    if (!agarre) {
+      const brisa = Math.sin(t / 1400) * 0.9; // vaivén suave aunque nadie lo toque
+      vel += (-26 * Math.sin(ang * Math.PI / 180) * 3 - vel * 1.1 + brisa) * dt * 3;
+      ang += vel * dt * 12;
+      ang = Math.max(-70, Math.min(70, ang));
+    }
+    pendulo.style.setProperty('--ang', ang.toFixed(2) + 'deg');
+    if (visible && activo) requestAnimationFrame(paso); else ultimo = 0;
+  }
+
+  // El mouse lo empuja al pasar cerca
+  let px = null;
+  $('.hero').addEventListener('pointermove', (e) => {
+    if (!activo || agarre || e.pointerType !== 'mouse') return;
+    const r = diente.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    if (px !== null && Math.hypot(e.clientX - cx, e.clientY - cy) < r.width * 0.75) {
+      vel += Math.max(-6, Math.min(6, (e.clientX - px) * 0.18));
+    }
+    px = e.clientX;
+  });
+
+  // Se puede agarrar y soltar; un toque lo hace girar
+  diente.addEventListener('pointerdown', (e) => {
+    if (!activo) return;
+    const ancla = pendulo.getBoundingClientRect();
+    agarre = { x: ancla.left, y: ancla.top, x0: e.clientX, mov: 0, prev: ang };
+    diente.classList.add('agarrado');
+    diente.setPointerCapture(e.pointerId);
+  });
+  diente.addEventListener('pointermove', (e) => {
+    if (!agarre) return;
+    agarre.mov += Math.abs(e.clientX - agarre.x0); agarre.x0 = e.clientX;
+    const a = Math.atan2(e.clientX - agarre.x, e.clientY - agarre.y) * -180 / Math.PI;
+    agarre.prev = ang;
+    ang = Math.max(-70, Math.min(70, a));
+  });
+  const soltar = () => {
+    if (!agarre) return;
+    const toque = agarre.mov < 6;
+    vel = (ang - agarre.prev) * 0.9;
+    agarre = null;
+    diente.classList.remove('agarrado');
+    if (toque) {
+      diente.classList.remove('gira'); void diente.offsetWidth; diente.classList.add('gira');
+      vel += (Math.random() > 0.5 ? 1 : -1) * 5;
+    }
+    decir(frases[Math.floor(Math.random() * frases.length)]);
+  };
+  diente.addEventListener('pointerup', soltar);
+  diente.addEventListener('pointercancel', soltar);
+})();
+
+// ===== Gotita: la pasta dental que camina mientras bajas =====
+(function gotita() {
+  const g = $('[data-gotita]');
+  if (!g) return;
+  const globo = $('[data-gotita-globo]', g);
+  const btn = $('[data-gotita-btn]', g);
+  const consejos = [
+    '¡Cepíllate después de cada comida!',
+    '¡No olvides el hilo dental!',
+    'Cambia tu cepillo cada 3 meses.',
+    '¡Cosquillas no, que me derramo!',
+    'Una limpieza cada 6 meses y listo.',
+    '¡Tu sonrisa me hace brillar!',
+  ];
+  let x = 16, objetivo = 16, tGlobo, tHablar, ultimaFrase = '';
+
+  const decir = (txt, ms = 3200) => {
+    if (!txt) return;
+    globo.textContent = txt;
+    globo.classList.add('ver');
+    clearTimeout(tGlobo);
+    tGlobo = setTimeout(() => globo.classList.remove('ver'), ms);
+  };
+
+  // Recorre el ancho de la pantalla según cuánto has bajado (deja libre el botón de WhatsApp)
+  const calcular = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const p = max > 0 ? scrollY / max : 0;
+    const libre = innerWidth - g.offsetWidth - 110;
+    objetivo = 12 + Math.max(0, libre - 12) * p;
+  };
+  let quieto = 0;
+  function cuadro() {
+    const dx = objetivo - x;
+    x += dx * 0.08;
+    if (Math.abs(dx) > 0.6) {
+      g.classList.add('camina');
+      g.style.setProperty('--dir', dx > 0 ? 1 : -1);
+      quieto = 0;
+    } else if (++quieto > 8) g.classList.remove('camina');
+    g.style.setProperty('--x', x.toFixed(1) + 'px');
+    g.classList.toggle('a-la-derecha', x > innerWidth / 2);
+    requestAnimationFrame(cuadro);
+  }
+  if (!reduce) {
+    addEventListener('scroll', calcular, { passive: true });
+    addEventListener('resize', calcular);
+    calcular(); x = objetivo;
+    requestAnimationFrame(cuadro);
+  } else {
+    g.style.setProperty('--x', '12px');
+  }
+
+  // Comenta cada sección cuando aparece
+  const io = new IntersectionObserver((ents) => ents.forEach((en) => {
+    if (!en.isIntersecting) return;
+    const frase = en.target.dataset.gotitaDice;
+    if (frase === ultimaFrase) return;
+    ultimaFrase = frase;
+    clearTimeout(tHablar);
+    tHablar = setTimeout(() => decir(frase), 350);
+  }), { threshold: 0.35 });
+  const secciones = $$('[data-gotita-dice]');
+  const arrancar = () => setTimeout(() => secciones.forEach((s) => io.observe(s)), 600);
+  if (document.body.classList.contains('cargando')) {
+    new MutationObserver((m, obs) => {
+      if (!document.body.classList.contains('cargando')) { obs.disconnect(); arrancar(); }
+    }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  } else arrancar();
+
+  // Al tocarla brinca y da un consejo
+  btn.addEventListener('click', () => {
+    g.classList.remove('brinca'); void g.offsetWidth; g.classList.add('brinca', 'feliz');
+    setTimeout(() => g.classList.remove('feliz'), 1200);
+    decir(consejos[Math.floor(Math.random() * consejos.length)]);
+  });
+
+  // Los ojos siguen al cursor
+  const pupilas = $$('.gotita__pupila, .dientin__pupila');
+  const base = pupilas.map((p) => [+p.getAttribute('cx'), +p.getAttribute('cy')]);
+  addEventListener('pointermove', (e) => {
+    pupilas.forEach((p, i) => {
+      const svg = p.ownerSVGElement.getBoundingClientRect();
+      const dx = e.clientX - (svg.left + svg.width / 2), dy = e.clientY - (svg.top + svg.height / 2);
+      const d = Math.hypot(dx, dy) || 1;
+      const dir = p.closest('.gotita') ? +getComputedStyle(g).getPropertyValue('--dir') || 1 : 1;
+      p.setAttribute('cx', (base[i][0] + (dx / d) * 1.6 * dir).toFixed(2));
+      p.setAttribute('cy', (base[i][1] + (dy / d) * 2.2 + 1.2).toFixed(2));
+    });
+  }, { passive: true });
+})();
