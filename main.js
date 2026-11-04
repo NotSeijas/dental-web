@@ -145,8 +145,11 @@ function terminarCarga() {
   document.body.classList.remove('cargando');
   setTimeout(() => $('.hero').classList.add('listo'), reduce ? 0 : 280);
 }
-window.addEventListener('load', () => setTimeout(terminarCarga, reduce ? 0 : Math.max(0, 2300 - (performance.now() - inicio))));
-setTimeout(terminarCarga, 4000);
+// Gotita saluda en la carga con un consejo al azar; la carga dura un poco más para leerlo
+const consejoCarga = $('[data-carga-consejo]');
+if (consejoCarga) consejoCarga.textContent = 'Consejo: ' + CONSEJOS[Math.floor(Math.random() * CONSEJOS.length)];
+window.addEventListener('load', () => setTimeout(terminarCarga, reduce ? 0 : Math.max(0, 3600 - (performance.now() - inicio))));
+setTimeout(terminarCarga, 5200);
 
 // ===== Menú móvil =====
 const btnMenu = $('.top__menu');
@@ -659,14 +662,7 @@ $$('[data-ir-servicio]').forEach((b) => b.addEventListener('click', () => {
   if (!g) return;
   const globo = $('[data-gotita-globo]', g);
   const btn = $('[data-gotita-btn]', g);
-  const consejos = [
-    '¡Cepíllate después de cada comida!',
-    '¡No olvides el hilo dental!',
-    'Cambia tu cepillo cada 3 meses.',
-    '¡Cosquillas no, que me derramo!',
-    'Una limpieza cada 6 meses y listo.',
-    '¡Tu sonrisa me hace brillar!',
-  ];
+  const consejos = [...CONSEJOS, '¡Cosquillas no, que me derramo!', '¡Tu sonrisa me hace brillar!'];
   let x = 16, objetivo = 16, tGlobo, tHablar, ultimaFrase = '';
 
   const decir = (txt, ms = 3200) => {

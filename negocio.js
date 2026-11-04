@@ -15,6 +15,20 @@ const NEGOCIO = {
   },
 };
 
+// Consejos que Gotita da al azar (pantalla de carga y al tocarla)
+const CONSEJOS = [
+  'Cepíllate 2 minutos, dos veces al día.',
+  'Usa hilo dental todas las noches.',
+  'Cambia tu cepillo cada 3 meses.',
+  'Haz tu limpieza dental cada 6 meses.',
+  'Cepilla también tu lengua.',
+  'Toma agua después de comer dulces.',
+  'Espera 30 minutos para cepillarte después de algo ácido.',
+  'Usa pasta con flúor.',
+  'Si te sangran las encías, ven a una revisión.',
+  'Los niños deben ir al dentista desde su primer diente.',
+];
+
 // Todas las horas de atención de un día (cada media hora)
 function horasDelDia(d) {
   const out = [];

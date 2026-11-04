@@ -138,6 +138,17 @@ html { scrollbar-color: var(--azul) var(--fondo); }
 @keyframes gcAterriza { 0% { transform: scale(1.22, 0.78); } 55% { transform: scale(0.94, 1.08); } 100% { transform: none; } }
 @keyframes gcMira { to { transform: translate(-2px, -2.4px); } }
 @keyframes gcFestejo { 0%, 100% { transform: none; } 45% { transform: translateY(-22px) rotate(-10deg); } }
+.carga__globo {
+  position: absolute; right: 22px; top: calc(100% + 10px); width: max-content; max-width: 250px; margin: 0;
+  display: grid; gap: 4px; padding: 11px 14px; border-radius: 16px 4px 16px 16px; background: #fff; color: var(--tinta);
+  font-size: 0.85rem; line-height: 1.35; text-align: left; box-shadow: 0 14px 30px -12px rgba(3, 20, 38, 0.55);
+  opacity: 0; transform: translateY(-8px) scale(0.85); transform-origin: 100% 0;
+  animation: gcGlobo 450ms cubic-bezier(0.34, 1.56, 0.64, 1) 1450ms forwards;
+}
+.carga__globo b { font-family: var(--display); font-weight: 700; font-size: 0.92rem; color: var(--azul-hondo); }
+.carga__globo span:not([data-nombre]) { color: var(--tinta-2); }
+@keyframes gcGlobo { to { opacity: 1; transform: none; } }
+@media (max-width: 520px) { .carga__globo { right: 8px; max-width: 230px; font-size: 0.8rem; } }
 @media (max-width: 520px) { .carga__gotita { right: -70px; width: 62px; height: 70px; } }
 body:not(.cargando) .carga { transform: translateY(-110%); border-radius: 0 0 50% 50% / 0 0 22vh 22vh; visibility: hidden; }
 body:not(.cargando) .carga__in { opacity: 0; transform: translateY(-60px); }
