@@ -716,7 +716,20 @@ $$('[data-ir-servicio]').forEach((b) => b.addEventListener('click', () => {
     tHablar = setTimeout(() => decir(frase), 350);
   }), { threshold: 0.35 });
   const secciones = $$('[data-gotita-dice]');
-  const arrancar = () => setTimeout(() => secciones.forEach((s) => io.observe(s)), 600);
+
+  // Bienvenida: al terminar la carga brinca, sonríe y saluda con el nombre de la clínica
+  const saludar = () => {
+    const nombre = ($('[data-nombre]')?.textContent || '').trim();
+    const hero = $('#inicio');
+    if (hero) ultimaFrase = hero.dataset.gotitaDice;
+    g.classList.remove('brinca'); void g.offsetWidth; g.classList.add('brinca', 'feliz');
+    setTimeout(() => g.classList.remove('feliz'), 1600);
+    decir(`¡Hola, bienvenido${nombre ? ` a Clínica Dental ${nombre}` : ''}! Soy Gotita y te acompaño por la página.`, 6000);
+  };
+  const arrancar = () => {
+    setTimeout(saludar, 500);
+    setTimeout(() => secciones.forEach((s) => io.observe(s)), 600);
+  };
   if (document.body.classList.contains('cargando')) {
     new MutationObserver((m, obs) => {
       if (!document.body.classList.contains('cargando')) { obs.disconnect(); arrancar(); }
