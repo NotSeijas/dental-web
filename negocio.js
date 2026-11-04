@@ -1,6 +1,6 @@
 // ===== Datos del negocio (editar aquí) =====
 const NEGOCIO = {
-  nombre: 'Raíz', // nombre provisional, confirmar con el cliente
+  nombre: 'Seijas',
   wa: '51972845629',
   telefono: '972 845 629',
   direccion: 'Dirección por confirmar',

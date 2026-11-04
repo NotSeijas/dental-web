@@ -8,7 +8,7 @@ Sitio estático (HTML/CSS/JS). Vista previa: config `dental-web` en `E:\codex\.c
 
 ## Por confirmar con el cliente
 
-- Nombre de la clínica ("Raíz" es provisional).
+- Nombre de la clínica: Clínica Dental Seijas.
 - Dirección, horario real y si atienden domingos.
 - Lista final de servicios (y si quieren mostrar precios).
 - Fotos propias del consultorio y del equipo.
