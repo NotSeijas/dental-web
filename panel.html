@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Panel de citas · Clínica Dental Seijas</title>
-  <meta name="theme-color" content="#0f4c7a">
+  <title>Panel de odontólogos · Centro Odontológico Yenmar</title>
+  <meta name="theme-color" content="#0e4673">
   <link rel="icon" href="media/logo.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,9 +17,9 @@
   <!-- Ingreso -->
   <main class="ingreso" data-ingreso hidden>
     <form class="ingreso__caja" data-form-ingreso>
-      <img src="media/logo.png" alt="" width="64" height="65">
-      <h1>Panel de citas</h1>
-      <p>Clínica Dental <span data-nombre>Seijas</span></p>
+      <img src="media/logo.png" alt="" width="64" height="60">
+      <h1>Panel de odontólogos</h1>
+      <p>Centro Odontológico <span data-nombre>Yenmar</span></p>
       <label class="campo">
         <span>Correo</span>
         <input type="email" name="correo" autocomplete="username" required>
@@ -30,15 +30,27 @@
       </label>
       <p class="ingreso__error" data-error-ingreso role="alert"></p>
       <button class="boton" type="submit">Entrar</button>
+      <p class="ingreso__nota">Cada odontólogo entra con su propia cuenta.</p>
     </form>
+    <div class="ingreso__caja" data-sin-vincular hidden>
+      <img src="media/logo.png" alt="" width="64" height="60">
+      <h1>Cuenta sin doctor</h1>
+      <p>La cuenta <b data-correo></b> todavía no está vinculada a ningún odontólogo. Pide al administrador que la vincule.</p>
+      <button class="boton boton--suave" type="button" data-salir>Salir</button>
+    </div>
   </main>
 
   <!-- Panel -->
   <div class="panel" data-panel hidden>
     <header class="barra">
       <div class="barra__marca">
-        <img src="media/logo.png" alt="" width="34" height="35">
-        <div><strong>Panel de citas</strong><span>Clínica Dental <span data-nombre>Seijas</span></span></div>
+        <img src="media/logo.png" alt="" width="34" height="32">
+        <div><strong>Panel de citas</strong><span>Centro Odontológico <span data-nombre>Yenmar</span></span></div>
+      </div>
+      <div class="yo">
+        <img data-yo-foto src="" alt="" width="40" height="40">
+        <div><strong data-yo-nombre></strong><span data-yo-cargo></span></div>
+        <label class="yo__elegir" data-solo-admin hidden><span class="sr">Ver la agenda de</span><select data-elegir-doc></select></label>
       </div>
       <div class="barra__acciones">
         <span class="guardado" data-guardado aria-live="polite"></span>
@@ -46,6 +58,8 @@
         <button class="enlace" type="button" data-salir>Salir</button>
       </div>
     </header>
+
+    <section class="bandeja" data-bandeja aria-live="polite" hidden></section>
 
     <div class="cuerpo">
       <aside class="lista">
@@ -65,11 +79,15 @@
             <span>Día completo ocupado</span>
           </label>
         </div>
-        <p class="ayuda">Toca una hora para marcarla <b>ocupada</b> o <b>libre</b>. Los pacientes solo ven qué horas están tomadas; las notas son solo para ti.</p>
+        <div class="turnos" data-turnos></div>
+        <p class="sin-turno" data-sin-turno hidden>Este día no tienes turno. Si quieres atender, pide unirte a un turno de arriba o toma uno libre.</p>
+        <div data-con-turno>
+        <p class="ayuda">Toca una hora para marcarla <b>ocupada</b> o <b>libre</b>. Los pacientes solo ven qué horas tienes tomadas; tus notas son solo para ti y ningún otro doctor puede cambiar tu agenda.</p>
         <div class="dia__resumen" data-resumen></div>
         <div class="horario" data-horario></div>
         <div class="dia__pie">
           <button class="boton boton--suave" type="button" data-liberar>Liberar todo el día</button>
+        </div>
         </div>
       </section>
     </div>

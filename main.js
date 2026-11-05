@@ -247,22 +247,90 @@ $('[data-vista-reservar]').addEventListener('click', () => {
   $('#reservar').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
 });
 
+// ===== Equipo =====
+const rangoDias = (dias) => {
+  // [1,2,3,4,5,6] → "Lun a Sáb";  [1,3] → "Lun y Mié"
+  const seguidos = dias.every((x, i) => i === 0 || x === dias[i - 1] + 1);
+  if (dias.length > 2 && seguidos) return `${DIAS_CORTOS[dias[0]]} a ${DIAS_CORTOS[dias.at(-1)]}`;
+  return dias.map((x) => DIAS_CORTOS[x]).join(dias.length === 2 ? ' y ' : ', ');
+};
+function resumenTurnos(doc) {
+  return Object.keys(TURNOS).map((t) => {
+    const dias = [1, 2, 3, 4, 5, 6, 0].filter((x) => (doc.turnos[x] || []).includes(t));
+    if (!dias.length) return '';
+    return `<li><b>${TURNOS[t].nombre}</b> ${rangoDias(dias)} · ${fmtHora(TURNOS[t].desde)} – ${fmtHora(TURNOS[t].hasta)}</li>`;
+  }).join('');
+}
+const nombreServ = (id) => SERVICIOS.find((x) => x.id === id)?.nombre || id;
+const equipoEl = $('[data-equipo]');
+if (equipoEl) {
+  equipoEl.innerHTML = DOCTORES.map((d) => `
+    <article class="doc" data-anim>
+      <figure class="doc__foto"><img src="${d.foto}" alt="${d.nombre}" width="500" height="625" loading="lazy"></figure>
+      <div class="doc__info">
+        <p class="doc__cargo">${d.cargo}</p>
+        <h3>${d.nombre}</h3>
+        <p class="doc__resumen">${d.resumen}</p>
+        <ul class="doc__funciones">${d.funciones.map((f) => `<li>${nombreServ(f)}</li>`).join('')}</ul>
+        <ul class="doc__turnos">${resumenTurnos(d)}</ul>
+        <button class="btn btn--azul doc__btn" type="button" data-reservar-con="${d.id}">Reservar con ${d.cargo.includes('jano') ? 'él' : 'ella'}</button>
+      </div>
+    </article>`).join('');
+  equipoEl.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-reservar-con]');
+    if (!b) return;
+    elegirDoctor(b.dataset.reservarCon);
+    $('#reservar').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+  });
+}
+
 // ===== Reserva =====
 const form = $('[data-reserva]');
 const selServ = $('[data-campo-servicio]');
-selServ.innerHTML = `<option value="">Elige un servicio…</option>` +
-  SERVICIOS.map((s) => `<option value="${s.id}">${s.nombre}</option>`).join('');
+const docsEl = $('[data-doctores]');
+const cita = { doctor: '', servicio: '', dia: null, hora: null, nombre: '', celular: '', comentario: '' };
 
-const cita = { servicio: '', dia: null, hora: null, nombre: '', celular: '', comentario: '' };
+docsEl.innerHTML = DOCTORES.map((d) => `
+  <button type="button" class="elige-doc" role="radio" aria-checked="false" data-doc="${d.id}">
+    <img src="${d.foto}" alt="" width="56" height="70">
+    <span><strong>${d.nombre}</strong><small>${d.resumen}</small><em data-doc-aviso></em></span>
+  </button>`).join('');
 
-function elegirServicio(id) {
-  selServ.value = id;
-  cita.servicio = id;
-  pintarTarjeta();
+function pintarServicios() {
+  const doc = doctor(cita.doctor);
+  const lista = doc ? SERVICIOS.filter((s) => doc.funciones.includes(s.id)) : SERVICIOS;
+  selServ.innerHTML = `<option value="">${doc ? `Servicios de ${doc.nombre}…` : 'Elige un servicio…'}</option>` +
+    lista.map((s) => `<option value="${s.id}">${s.nombre}</option>`).join('');
+  selServ.value = lista.some((s) => s.id === cita.servicio) ? cita.servicio : '';
 }
+function pintarDoctores() {
+  $$('.elige-doc', docsEl).forEach((b) => {
+    const d = doctor(b.dataset.doc);
+    const no = !!cita.servicio && !d.funciones.includes(cita.servicio);
+    b.setAttribute('aria-checked', String(cita.doctor === d.id));
+    b.disabled = no;
+    $('[data-doc-aviso]', b).textContent = no ? `No realiza ${nombreServ(cita.servicio).toLowerCase()}` : '';
+  });
+}
+function repintar() { pintarDoctores(); pintarServicios(); marcarDias(); pintarHoras(); pintarTarjeta(); }
+function elegirDoctor(id) {
+  cita.doctor = id;
+  if (cita.servicio && !doctor(id).funciones.includes(cita.servicio)) cita.servicio = '';
+  limpiarSiNoSirve();
+  repintar();
+}
+function elegirServicio(id) {
+  cita.servicio = id;
+  if (cita.doctor && !doctor(cita.doctor).funciones.includes(id)) { cita.doctor = ''; cita.dia = null; cita.hora = null; }
+  repintar();
+}
+docsEl.addEventListener('click', (e) => {
+  const b = e.target.closest('.elige-doc');
+  if (b && !b.disabled) elegirDoctor(b.dataset.doc);
+});
 $$('[data-preselect]').forEach((a) => a.addEventListener('click', () => elegirServicio(a.dataset.preselect)));
 
-// Días: los próximos 14 días con atención
+// Días: los próximos 12 días en que atiende la clínica
 const diasEl = $('[data-dias]');
 const horasEl = $('[data-horas]');
 const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
@@ -270,22 +338,28 @@ const diasDisp = [];
 for (let i = 0; diasDisp.length < 12 && i < 21; i++) {
   const d = new Date(hoy); d.setDate(d.getDate() + i);
   if (!NEGOCIO.horario[d.getDay()]) continue;
-  if (i === 0 && slotsDe(d).length === 0) continue;
+  if (i === 0 && horasDelDia(d).every((h) => h < horaDecimal(new Date()) + 1)) continue;
   diasDisp.push(d);
 }
-function slotsDe(d) {
-  const esHoy = d.getTime() === hoy.getTime();
-  const limite = esHoy ? horaDecimal(new Date()) + 1 : -1; // mínimo una hora de anticipación
-  return horasDelDia(d).filter((h) => h >= limite);
-}
 
-// Horarios ocupados que marca el dentista en su panel (llegan desde agenda.js)
-let OCUPADO = {};
+// Agenda que marcan los doctores en su panel (llega desde agenda.js)
+let OCUPADO = {};   // { d1: { '2026-11-05': { completo, horas } } }
+let EXTRAS = [];    // turnos a los que se unió cada doctor (solicitudes aceptadas)
+function slotsDe(d) {
+  if (!cita.doctor) return [];
+  const limite = d.getTime() === hoy.getTime() ? horaDecimal(new Date()) + 1 : -1; // una hora de anticipación
+  return horasDeDoctor(cita.doctor, d, EXTRAS).filter((h) => h >= limite);
+}
+const atiende = (d) => slotsDe(d).length > 0;
 const ocupada = (d, h) => {
-  const o = OCUPADO[claveFecha(d)];
+  const o = OCUPADO[cita.doctor]?.[claveFecha(d)];
   return !!o && (o.completo || o.horas.includes(h));
 };
 const diaLleno = (d) => slotsDe(d).every((h) => ocupada(d, h));
+function limpiarSiNoSirve() {
+  if (cita.dia && (!atiende(cita.dia) || diaLleno(cita.dia))) { cita.dia = null; cita.hora = null; }
+  else if (cita.dia && cita.hora != null && (ocupada(cita.dia, cita.hora) || !slotsDe(cita.dia).includes(cita.hora))) cita.hora = null;
+}
 diasDisp.forEach((d, i) => {
   const etiqueta = i === 0 && d.getTime() === hoy.getTime() ? 'Hoy' : DIAS_CORTOS[d.getDay()];
   diasEl.insertAdjacentHTML('beforeend', `
@@ -297,39 +371,34 @@ diasDisp.forEach((d, i) => {
 function marcarDias() {
   $$('.dia', diasEl).forEach((b) => {
     const d = diasDisp[+b.dataset.i];
-    const lleno = diaLleno(d);
-    b.disabled = lleno;
-    b.classList.toggle('lleno', lleno);
-    $('small', b).textContent = lleno ? 'lleno' : MESES[d.getMonth()].slice(0, 3);
+    const no = !!cita.doctor && !atiende(d);
+    const lleno = !!cita.doctor && !no && diaLleno(d);
+    b.disabled = !cita.doctor || no || lleno;
+    b.classList.toggle('lleno', no || lleno);
+    b.setAttribute('aria-checked', String(cita.dia === d));
+    $('small', b).textContent = no ? 'no atiende' : lleno ? 'lleno' : MESES[d.getMonth()].slice(0, 3);
   });
+  diasEl.classList.toggle('apagado', !cita.doctor);
 }
 
-// La agenda llama a esto cada vez que el dentista cambia algo
+// La agenda llama a esto cada vez que un doctor cambia algo
+function alCambiarAgenda() { limpiarSiNoSirve(); marcarDias(); pintarHoras(); pintarTarjeta(); }
 window.rangoReserva = [diasDisp[0], diasDisp.at(-1)];
-window.ponerOcupado = (mapa) => {
-  OCUPADO = mapa;
-  if (cita.dia && diaLleno(cita.dia)) {
-    cita.dia = null; cita.hora = null;
-    $$('.dia', diasEl).forEach((x) => x.setAttribute('aria-checked', 'false'));
-  } else if (cita.dia && cita.hora != null && ocupada(cita.dia, cita.hora)) {
-    cita.hora = null;
-  }
-  marcarDias();
-  pintarHoras();
-  pintarTarjeta();
-};
+window.doctoresIds = DOCTORES.map((d) => d.id);
+window.ponerOcupado = (todo) => { OCUPADO = todo; alCambiarAgenda(); };
+window.ponerExtras = (lista) => { EXTRAS = lista; alCambiarAgenda(); };
 
 function pintarHoras() {
   horasEl.innerHTML = '';
-  if (!cita.dia) {
-    horasEl.innerHTML = '<p class="horas__vacio">Primero elige un día.</p>';
+  if (!cita.doctor || !cita.dia) {
+    horasEl.innerHTML = `<p class="horas__vacio">${cita.doctor ? 'Ahora elige un día.' : 'Primero elige con qué odontólogo quieres tu cita.'}</p>`;
     return;
   }
   const slots = slotsDe(cita.dia);
-  const grupos = { 'Mañana': slots.filter((h) => h < 13), 'Tarde': slots.filter((h) => h >= 13) };
-  Object.entries(grupos).forEach(([nom, hs]) => {
+  Object.keys(TURNOS).forEach((t) => {
+    const hs = slots.filter((h) => turnoDeHora(h) === t);
     if (!hs.length) return;
-    horasEl.insertAdjacentHTML('beforeend', `<p class="horas__grupo">${nom}</p>`);
+    horasEl.insertAdjacentHTML('beforeend', `<p class="horas__grupo">Turno ${TURNOS[t].nombre.toLowerCase()}</p>`);
     const fila = document.createElement('div');
     fila.className = 'horas__fila';
     hs.forEach((h) => {
@@ -348,11 +417,9 @@ function pintarHoras() {
 diasEl.addEventListener('click', (e) => {
   const b = e.target.closest('.dia');
   if (!b || b.disabled) return;
-  $$('.dia', diasEl).forEach((x) => x.setAttribute('aria-checked', String(x === b)));
   cita.dia = diasDisp[+b.dataset.i];
   cita.hora = null;
-  pintarHoras();
-  pintarTarjeta();
+  marcarDias(); pintarHoras(); pintarTarjeta();
 });
 horasEl.addEventListener('click', (e) => {
   const b = e.target.closest('.hora');
@@ -361,7 +428,7 @@ horasEl.addEventListener('click', (e) => {
   cita.hora = +b.dataset.h;
   pintarTarjeta();
 });
-selServ.addEventListener('change', () => { cita.servicio = selServ.value; pintarTarjeta(); });
+selServ.addEventListener('change', () => { cita.servicio = selServ.value; pintarDoctores(); pintarTarjeta(); });
 form.addEventListener('input', (e) => {
   if (e.target.name === 'celular') e.target.value = e.target.value.replace(/\D/g, '').slice(0, 9);
   if (['nombre', 'celular', 'comentario'].includes(e.target.name)) cita[e.target.name] = e.target.value.trim();
@@ -384,6 +451,7 @@ function fechaLarga(d) {
 function pintarTarjeta() {
   const s = SERVICIOS.find((x) => x.id === cita.servicio);
   pon('[data-t-nombre]', cita.nombre);
+  pon('[data-t-doctor]', doctor(cita.doctor)?.nombre);
   pon('[data-t-servicio]', s ? s.nombre : '');
   pon('[data-t-dia]', cita.dia ? fechaLarga(cita.dia) : '');
   pon('[data-t-hora]', cita.hora != null ? fmtHora(cita.hora) : '');
@@ -393,6 +461,7 @@ function pintarTarjeta() {
 
 function enviar() {
   const faltan = [];
+  if (!cita.doctor) faltan.push('el odontólogo');
   if (!cita.servicio) faltan.push('el servicio');
   if (!cita.dia) faltan.push('el día');
   if (cita.hora == null) faltan.push('la hora');
@@ -408,9 +477,10 @@ function enviar() {
   const s = SERVICIOS.find((x) => x.id === cita.servicio);
   const msg = [
     'Hola, quiero reservar una cita:',
+    `• Odontólogo: ${doctor(cita.doctor).nombre}`,
     `• Servicio: ${s.nombre}`,
     `• Día: ${fechaLarga(cita.dia)}`,
-    `• Hora: ${fmtHora(cita.hora)}`,
+    `• Hora: ${fmtHora(cita.hora)} (turno ${TURNOS[turnoDeHora(cita.hora)].nombre.toLowerCase()})`,
     `• Nombre: ${cita.nombre}`,
     `• Celular: ${cita.celular}`,
     cita.comentario ? `• Comentario: ${cita.comentario}` : '',
@@ -420,6 +490,8 @@ function enviar() {
   window.open(waLink(msg), '_blank', 'noopener');
 }
 $('[data-enviar]').addEventListener('click', enviar);
+pintarServicios();
+marcarDias();
 pintarHoras();
 pintarTarjeta();
 
@@ -713,14 +785,14 @@ $$('[data-ir-servicio]').forEach((b) => b.addEventListener('click', () => {
   }), { threshold: 0.35 });
   const secciones = $$('[data-gotita-dice]');
 
-  // Bienvenida: al terminar la carga brinca, sonríe y saluda con el nombre de la clínica
+  // Bienvenida: al terminar la carga brinca, sonríe y saluda con el nombre del centro
   const saludar = () => {
     const nombre = ($('[data-nombre]')?.textContent || '').trim();
     const hero = $('#inicio');
     if (hero) ultimaFrase = hero.dataset.gotitaDice;
     g.classList.remove('brinca'); void g.offsetWidth; g.classList.add('brinca', 'feliz');
     setTimeout(() => g.classList.remove('feliz'), 1600);
-    decir(`¡Hola, bienvenido${nombre ? ` a Clínica Dental ${nombre}` : ''}! Soy Gotita y te acompaño por la página.`, 6000);
+    decir(`¡Hola, bienvenido${nombre ? ` al Centro Odontológico ${nombre}` : ''}! Soy Gotita y te acompaño por la página.`, 6000);
   };
   const arrancar = () => {
     setTimeout(saludar, 500);

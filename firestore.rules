@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Cuenta → doctor: medicos/{correo} = { doctor: 'd1' } o { admin: true }
+    function perfil() {
+      return get(/databases/$(database)/documents/medicos/$(request.auth.token.email.lower())).data;
+    }
+    function esDe(doctor) {
+      return request.auth != null && (perfil().get('doctor', '') == doctor || perfil().get('admin', false) == true);
+    }
+
+    match /medicos/{correo} {
+      allow read: if request.auth != null && request.auth.token.email.lower() == correo;
+    }
+
+    // Horas ocupadas de cada doctor: la web las lee, solo ese doctor las cambia
+    match /agenda/{doctor}/ocupado/{fecha} {
+      allow read: if true;
+      allow write: if esDe(doctor);
+    }
+
+    // Notas de pacientes: privadas, solo ese doctor
+    match /agenda/{doctor}/notas/{fecha} {
+      allow read, write: if esDe(doctor);
+    }
+
+    // Pedir unirse al turno de otro doctor
+    match /solicitudes/{id} {
+      allow read: if true;
+      allow create: if esDe(request.resource.data.de)
+        && request.resource.data.estado in ['pendiente', 'abierto']
+        && request.resource.data.turno in ['manana', 'tarde', 'noche'];
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'respondida'])
+        && ((esDe(resource.data.para) && resource.data.estado == 'pendiente' && request.resource.data.estado in ['aceptada', 'rechazada'])
+          || (esDe(resource.data.de) && request.resource.data.estado == 'cancelada'));
+    }
+  }
+}

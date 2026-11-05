@@ -1,8 +1,8 @@
 // ===== Agenda compartida (Firebase) =====
-// La web solo lee qué días y horas están ocupados; el panel del dentista los edita.
+// La web solo lee la agenda de cada doctor; cada doctor edita la suya desde el panel.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
-  getFirestore, collection, doc, onSnapshot, query, where, documentId, setDoc, deleteDoc,
+  getFirestore, collection, doc, onSnapshot, query, where, documentId, setDoc, deleteDoc, addDoc, updateDoc, getDoc, serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 export const FIREBASE = {
@@ -23,36 +23,70 @@ export const db = configurado ? getFirestore(app) : null;
 export const claveFecha = (d) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-// ocupado/{fecha} = { completo: bool, horas: [9, 9.5, …] }  → público, solo lectura
-// notas/{fecha}   = { '9': 'Ana Pérez · limpieza', … }      → privado, solo el dentista
-export function escucharOcupado(desde, hasta, cb) {
+
+// agenda/{doctor}/ocupado/{fecha} = { completo, horas: [9, 9.5, …] }   → público, solo lectura
+// agenda/{doctor}/notas/{fecha}   = { '9': 'Ana Pérez · limpieza', … }  → privado, solo ese doctor
+// solicitudes/{id}                 = { de, para, fecha, turno, estado }  → unirse al turno de otro doctor
+// medicos/{correo}                 = { doctor: 'd1' } o { admin: true }  → qué doctor es cada cuenta
+const rango = (col, desde, hasta) =>
+  query(col, where(documentId(), '>=', claveFecha(desde)), where(documentId(), '<=', claveFecha(hasta)));
+
+export function escucharOcupado(docId, desde, hasta, cb) {
   if (!db) return () => {};
-  const q = query(collection(db, 'ocupado'),
-    where(documentId(), '>=', claveFecha(desde)), where(documentId(), '<=', claveFecha(hasta)));
-  return onSnapshot(q, (snap) => {
+  return onSnapshot(rango(collection(db, 'agenda', docId, 'ocupado'), desde, hasta), (snap) => {
     const mapa = {};
     snap.forEach((d) => (mapa[d.id] = { completo: !!d.data().completo, horas: d.data().horas || [] }));
     cb(mapa);
   }, (err) => console.warn('Agenda no disponible:', err.message));
 }
 
-export function escucharNotas(desde, hasta, cb) {
+// Ocupados de todos los doctores: { d1: { '2026-11-05': {…} }, d2: … }
+export function escucharTodos(ids, desde, hasta, cb) {
+  const todo = Object.fromEntries(ids.map((id) => [id, {}]));
+  const apagar = ids.map((id) => escucharOcupado(id, desde, hasta, (m) => { todo[id] = m; cb({ ...todo }); }));
+  return () => apagar.forEach((f) => f());
+}
+
+export function escucharNotas(docId, desde, hasta, cb) {
   if (!db) return () => {};
-  const q = query(collection(db, 'notas'),
-    where(documentId(), '>=', claveFecha(desde)), where(documentId(), '<=', claveFecha(hasta)));
-  return onSnapshot(q, (snap) => {
+  return onSnapshot(rango(collection(db, 'agenda', docId, 'notas'), desde, hasta), (snap) => {
     const mapa = {};
     snap.forEach((d) => (mapa[d.id] = d.data()));
     cb(mapa);
   }, (err) => console.warn('Notas no disponibles:', err.message));
 }
 
-export function guardarOcupado(fecha, { completo, horas }) {
-  const ref = doc(db, 'ocupado', fecha);
+export function guardarOcupado(docId, fecha, { completo, horas }) {
+  const ref = doc(db, 'agenda', docId, 'ocupado', fecha);
   if (!completo && !horas.length) return deleteDoc(ref);
   return setDoc(ref, { completo, horas: [...horas].sort((a, b) => a - b) });
 }
 
-export function guardarNota(fecha, hora, texto) {
-  return setDoc(doc(db, 'notas', fecha), { [String(hora)]: texto }, { merge: true });
+export function guardarNota(docId, fecha, hora, texto) {
+  return setDoc(doc(db, 'agenda', docId, 'notas', fecha), { [String(hora)]: texto }, { merge: true });
+}
+
+// ----- Solicitudes para unirse al turno de otro doctor -----
+export function escucharSolicitudes(desde, hasta, cb) {
+  if (!db) return () => {};
+  const q = query(collection(db, 'solicitudes'),
+    where('fecha', '>=', claveFecha(desde)), where('fecha', '<=', claveFecha(hasta)));
+  return onSnapshot(q, (snap) => {
+    const lista = [];
+    snap.forEach((d) => lista.push({ id: d.id, ...d.data() }));
+    cb(lista);
+  }, (err) => console.warn('Solicitudes no disponibles:', err.message));
+}
+
+export function crearSolicitud({ de, para, fecha, turno, estado }) {
+  return addDoc(collection(db, 'solicitudes'), { de, para, fecha, turno, estado, creada: serverTimestamp() });
+}
+
+export function cambiarSolicitud(id, estado) {
+  return updateDoc(doc(db, 'solicitudes', id), { estado, respondida: serverTimestamp() });
+}
+
+export async function leerPerfil(correo) {
+  const s = await getDoc(doc(db, 'medicos', correo.toLowerCase()));
+  return s.exists() ? s.data() : null;
 }
