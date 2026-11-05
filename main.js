@@ -1,7 +1,7 @@
 const SERVICIOS = [
   {
-    id: 'evaluacion', nombre: 'Evaluación y diagnóstico', img: 'diagnostico',
-    alt: 'Odontólogo revisando radiografías dentales',
+    id: 'evaluacion', nombre: 'Evaluación y diagnóstico', img: 'r-ivan-atiende',
+    alt: 'El Dr. Iván evaluando a una paciente',
     desc: 'El punto de partida: revisamos dientes, encías y mordida, y te damos un plan claro con presupuesto antes de empezar cualquier tratamiento.',
     incluye: ['Examen clínico completo', 'Radiografías si hacen falta', 'Plan de tratamiento y presupuesto'],
     dur: '30 a 40 minutos',
@@ -49,8 +49,8 @@ const SERVICIOS = [
     dur: '45 a 90 minutos',
   },
   {
-    id: 'ninos', nombre: 'Odontopediatría', img: 'ninos',
-    alt: 'Odontólogo revisando los dientes de un niño',
+    id: 'ninos', nombre: 'Odontopediatría', img: 'r-yenny-nino',
+    alt: 'La Dra. Yenny revisando los dientes de un niño',
     desc: 'Atención para los más pequeños con paciencia y sin apuros, para que sus primeras visitas al dentista sean una buena experiencia.',
     incluye: ['Control y limpieza', 'Sellantes y flúor', 'Curaciones de dientes de leche'],
     dur: '30 a 45 minutos',
