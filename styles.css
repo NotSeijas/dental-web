@@ -491,8 +491,22 @@ body:not(.cargando) .carga__in { opacity: 0; transform: translateY(-60px); }
 .elige-doc[aria-checked="true"] small { color: var(--azul-hondo); }
 .elige-doc:disabled { opacity: 0.45; cursor: not-allowed; border-style: dashed; }
 @media (hover: hover) { .elige-doc:not(:disabled):hover { border-color: var(--hoja); } }
+.paso__ayuda { clear: both; margin: -6px 0 12px; font-size: 0.92rem; color: #c3dbeb; }
+.doc-globo {
+  position: relative; display: flex; align-items: center; gap: 10px; margin: 14px 0 0; padding: 10px 14px;
+  border-radius: 16px; background: #fff; color: var(--tinta); font-size: 0.93rem; font-weight: 500; line-height: 1.35;
+  box-shadow: 0 12px 26px -14px rgba(3, 20, 38, 0.6);
+}
+.doc-globo::before {
+  content: ""; position: absolute; top: -7px; left: clamp(20px, calc(var(--cola, 50%) - 7px), calc(100% - 34px));
+  width: 14px; height: 14px; background: #fff; transform: rotate(45deg); border-radius: 3px;
+}
+.doc-globo img { flex: none; width: 34px; height: 34px; border-radius: 50%; object-fit: cover; object-position: center 20%; }
+.doc-globo.sale { animation: globoDoc 420ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes globoDoc { from { opacity: 0; transform: translateY(-6px) scale(0.92); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .doc-globo.sale { animation: none; } }
 .dias.apagado .dia { opacity: 0.35; cursor: not-allowed; }
-@media (max-width: 860px) { .doctores { grid-template-columns: 1fr; } }
+@media (max-width: 860px) { .doctores { grid-template-columns: 1fr; } .doc-globo::before { display: none; } }
 
 /* ===== Equipo ===== */
 .equipo { padding-block: var(--seccion); }

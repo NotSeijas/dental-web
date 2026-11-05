@@ -20,18 +20,36 @@ const DOCTORES = [
   {
     id: 'd1', nombre: 'Dra. Roxana Seijas Figueroa', corto: 'Dra. Roxana', cargo: 'Cirujana dentista', foto: 'media/doc-1.jpg',
     resumen: 'Ortodoncia y alineadores. Atiende a niños y adultos.',
+    saludos: [
+      '¡Hola! Soy la Dra. Roxana. Te atiendo con calma y te explico cada paso.',
+      '¡Qué gusto! Soy Roxana: juntos vamos a cuidar esa sonrisa.',
+      'Hola, soy la Dra. Roxana. Pregúntame lo que quieras, sin vergüenza.',
+      '¡Bienvenido! Soy Roxana y me encanta ver sonrisas alineadas.',
+    ],
     funciones: ['evaluacion', 'limpieza', 'ortodoncia', 'alineadores', 'ninos'],
     turnos: { 1: ['manana'], 2: ['manana'], 3: ['manana'], 4: ['manana'], 5: ['manana'], 6: ['manana'] },
   },
   {
     id: 'd2', nombre: 'Dra. Yenny Meza Morales', corto: 'Dra. Yenny', cargo: 'Cirujana dentista', foto: 'media/doc-2.jpg',
     resumen: 'Estética dental, blanqueamiento y endodoncia.',
+    saludos: [
+      '¡Hola! Soy la Dra. Yenny. Aquí estás en buenas manos.',
+      'Soy Yenny: hagamos que tu sonrisa brille todavía más.',
+      '¡Qué bueno verte! Soy la Dra. Yenny, cuéntame qué necesitas.',
+      'Hola, soy Yenny. Tranquilo, vamos a tu ritmo.',
+    ],
     funciones: ['evaluacion', 'limpieza', 'blanqueamiento', 'estetica', 'endodoncia'],
     turnos: { 1: ['tarde'], 2: ['tarde'], 3: ['tarde'], 4: ['tarde'], 5: ['tarde'] },
   },
   {
     id: 'd3', nombre: 'Dr. Iván Meza Morales', corto: 'Dr. Iván', cargo: 'Cirujano dentista', foto: 'media/doc-3.jpg',
     resumen: 'Implantes, cirugía y extracciones.',
+    saludos: [
+      '¡Hola! Soy el Dr. Iván. Sin dolor y sin apuros, te lo prometo.',
+      'Soy Iván: te explico todo antes de empezar, sin sorpresas.',
+      '¡Bienvenido! Soy el Dr. Iván, aquí te sentirás en confianza.',
+      'Hola, soy Iván. Vamos a devolverle la fuerza a tu sonrisa.',
+    ],
     funciones: ['evaluacion', 'limpieza', 'implantes', 'cirugia', 'endodoncia'],
     turnos: { 1: ['noche'], 2: ['noche'], 3: ['noche'], 4: ['noche'], 5: ['noche'] },
   },

@@ -5,6 +5,7 @@ import {
 } from './agenda.js';
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence,
+  EmailAuthProvider, reauthenticateWithCredential, updatePassword,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -330,6 +331,7 @@ function sinVincular(u) {
 }
 
 if (demo) {
+  $('[data-abrir-clave]').hidden = true;
   const yo = doctor(params.get('demo')) ? params.get('demo') : 'd1';
   const f = (i) => claveFecha(dias[i]);
   TODOS = {
@@ -378,4 +380,30 @@ if (demo) {
     btn.disabled = false; btn.textContent = 'Entrar';
   });
   $$('[data-salir]').forEach((b) => b.addEventListener('click', () => signOut(auth)));
+
+  // ----- Cambiar contraseña (para reemplazar la temporal) -----
+  const dlg = $('[data-clave]'), formClave = $('[data-form-clave]'), errClave = $('[data-error-clave]');
+  $('[data-abrir-clave]').addEventListener('click', () => { formClave.reset(); errClave.textContent = ''; dlg.showModal(); });
+  $('[data-cerrar-clave]').addEventListener('click', () => dlg.close());
+  formClave.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const { actual, nueva, repite } = formClave;
+    if (nueva.value !== repite.value) { errClave.textContent = 'Las dos contraseñas nuevas no coinciden.'; return; }
+    if (nueva.value === actual.value) { errClave.textContent = 'La nueva debe ser distinta a la actual.'; return; }
+    const btn = $('button[type="submit"]', formClave);
+    btn.disabled = true; btn.textContent = 'Guardando…'; errClave.textContent = '';
+    try {
+      const u = auth.currentUser;
+      await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, actual.value));
+      await updatePassword(u, nueva.value);
+      dlg.close();
+      guardadoEl.className = 'guardado ok'; guardadoEl.textContent = 'Contraseña cambiada';
+      clearTimeout(tGuardado); tGuardado = setTimeout(() => (guardadoEl.textContent = ''), 3000);
+    } catch (err) {
+      errClave.textContent = ['auth/invalid-credential', 'auth/wrong-password'].includes(err.code) ? 'La contraseña actual no es correcta.'
+        : err.code === 'auth/weak-password' ? 'La nueva contraseña debe tener al menos 6 caracteres.'
+        : err.code === 'auth/too-many-requests' ? 'Demasiados intentos. Espera unos minutos.' : 'No se pudo cambiar. Revisa tu internet.';
+    }
+    btn.disabled = false; btn.textContent = 'Guardar';
+  });
 }

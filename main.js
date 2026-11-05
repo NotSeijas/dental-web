@@ -280,6 +280,7 @@ if (equipoEl) {
     const b = e.target.closest('[data-reservar-con]');
     if (!b) return;
     elegirDoctor(b.dataset.reservarCon);
+    saludarDoctor(b.dataset.reservarCon, $(`.elige-doc[data-doc="${b.dataset.reservarCon}"]`));
     $('#reservar').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
   });
 }
@@ -312,7 +313,10 @@ function pintarDoctores() {
     $('[data-doc-aviso]', b).textContent = no ? `No realiza ${nombreServ(cita.servicio).toLowerCase()}` : '';
   });
 }
-function repintar() { pintarDoctores(); pintarServicios(); marcarDias(); pintarHoras(); pintarTarjeta(); }
+function repintar() {
+  pintarDoctores(); pintarServicios(); marcarDias(); pintarHoras(); pintarTarjeta();
+  if (!cita.doctor) $('[data-doc-globo]').hidden = true;
+}
 function elegirDoctor(id) {
   cita.doctor = id;
   if (cita.servicio && !doctor(id).funciones.includes(cita.servicio)) cita.servicio = '';
@@ -324,9 +328,26 @@ function elegirServicio(id) {
   if (cita.doctor && !doctor(cita.doctor).funciones.includes(id)) { cita.doctor = ''; cita.dia = null; cita.hora = null; }
   repintar();
 }
+// Burbuja de saludo: una frase al azar de cada doctor (sin repetir la anterior)
+const globoDoc = $('[data-doc-globo]');
+let ultimoSaludo = '';
+function saludarDoctor(id, boton) {
+  const d = doctor(id);
+  const opciones = (d.saludos || []).filter((x) => x !== ultimoSaludo);
+  if (!opciones.length) return;
+  ultimoSaludo = opciones[Math.floor(Math.random() * opciones.length)];
+  globoDoc.innerHTML = `<img src="${d.foto}" alt="" width="34" height="34"><span>${ultimoSaludo}</span>`;
+  // la colita apunta al doctor elegido
+  const r = boton.getBoundingClientRect(), p = docsEl.getBoundingClientRect();
+  globoDoc.style.setProperty('--cola', `${r.left - p.left + r.width / 2}px`);
+  globoDoc.hidden = false;
+  globoDoc.classList.remove('sale'); void globoDoc.offsetWidth; globoDoc.classList.add('sale');
+}
 docsEl.addEventListener('click', (e) => {
   const b = e.target.closest('.elige-doc');
-  if (b && !b.disabled) elegirDoctor(b.dataset.doc);
+  if (!b || b.disabled) return;
+  elegirDoctor(b.dataset.doc);
+  saludarDoctor(b.dataset.doc, b);
 });
 $$('[data-preselect]').forEach((a) => a.addEventListener('click', () => elegirServicio(a.dataset.preselect)));
 

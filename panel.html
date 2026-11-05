@@ -55,6 +55,7 @@
       <div class="barra__acciones">
         <span class="guardado" data-guardado aria-live="polite"></span>
         <a class="enlace" href="./#reservar" target="_blank" rel="noopener">Ver la web</a>
+        <button class="enlace" type="button" data-abrir-clave>Contraseña</button>
         <button class="enlace" type="button" data-salir>Salir</button>
       </div>
     </header>
@@ -92,6 +93,21 @@
       </section>
     </div>
   </div>
+
+  <dialog class="clave" data-clave>
+    <form class="clave__caja" data-form-clave>
+      <h2>Cambiar contraseña</h2>
+      <p>Si te dieron una contraseña temporal, cámbiala aquí por una que solo tú sepas.</p>
+      <label class="campo"><span>Contraseña actual</span><input type="password" name="actual" autocomplete="current-password" required></label>
+      <label class="campo"><span>Nueva contraseña</span><input type="password" name="nueva" autocomplete="new-password" minlength="6" required></label>
+      <label class="campo"><span>Repite la nueva</span><input type="password" name="repite" autocomplete="new-password" minlength="6" required></label>
+      <p class="ingreso__error" data-error-clave role="alert"></p>
+      <div class="clave__botones">
+        <button class="boton boton--suave" type="button" data-cerrar-clave>Cancelar</button>
+        <button class="boton" type="submit">Guardar</button>
+      </div>
+    </form>
+  </dialog>
 
   <p class="aviso" data-aviso hidden></p>
 
