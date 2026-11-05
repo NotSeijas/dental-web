@@ -819,3 +819,15 @@ body.cargando .gotita { opacity: 0; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   html { scroll-behavior: auto; }
 }
+
+/* ===== Foto del equipo (final) ===== */
+.foto-equipo { padding-block: 0 var(--seccion); }
+.foto-equipo__marco { position: relative; margin: 0; border-radius: var(--radio); overflow: hidden; }
+.foto-equipo__marco img { display: block; width: 100%; height: auto; aspect-ratio: 1448 / 921; object-fit: cover; object-position: center top; }
+.foto-equipo__marco figcaption {
+  position: absolute; inset: auto 0 0 0; padding: clamp(40px, 8vw, 90px) clamp(20px, 4vw, 40px) clamp(18px, 3vw, 30px);
+  background: linear-gradient(transparent, rgba(8, 44, 74, 0.88)); color: #fff;
+}
+.foto-equipo__marco h2 { margin: 0; font-family: var(--display); font-size: clamp(1.6rem, 3.6vw, 2.8rem); letter-spacing: -0.02em; }
+.foto-equipo__marco p { margin: 6px 0 0; color: #dfeaf3; font-size: clamp(0.88rem, 1.5vw, 1.05rem); }
+@media (max-width: 600px) { .foto-equipo__marco img { aspect-ratio: 4 / 3.4; object-position: 60% top; } }

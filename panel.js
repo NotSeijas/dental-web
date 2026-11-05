@@ -280,23 +280,92 @@ $('[data-liberar]').addEventListener('click', () => {
   }
 });
 
-function pintarTodo() { pintarBandeja(); pintarLista(); pintarDia(); }
+function pintarTodo() {
+  if (YO === 'todos') { pintarGeneral(); return; }
+  pintarBandeja(); pintarLista(); pintarDia();
+}
+
+// ----- Vista general (soporte / administración): los 3 doctores en vivo -----
+const generalEl = $('[data-general]'), cuerpoEl = $('.cuerpo');
+let NOTAS_TODOS = {}, selGen = dias[0], apagarGen = [];
+const ESTADOS = { pendiente: 'Pendiente', aceptada: 'Aceptada', rechazada: 'Rechazada', cancelada: 'Cancelada', abierto: 'Tomó el turno' };
+function pintarGeneral() {
+  const f = claveFecha(selGen);
+  $('[data-gen-dias]').innerHTML = dias.slice(0, 14).map((d, i) => {
+    const total = DOCTORES.reduce((n, x) => n + horasDeDoctor(x.id, d, SOLIC).filter((h) => estaOcupado(x.id, d, h)).length, 0);
+    return `<button type="button" class="gen-dia${d === selGen ? ' activo' : ''}" data-gi="${i}">
+      <b>${d.getTime() === hoy.getTime() ? 'Hoy' : DIAS_CORTOS[d.getDay()]}</b> ${d.getDate()}
+      <small>${total ? `${total} citas` : 'libre'}</small></button>`;
+  }).join('');
+  $('[data-gen-titulo]').textContent = `${DIAS[selGen.getDay()][0].toUpperCase()}${DIAS[selGen.getDay()].slice(1)} ${selGen.getDate()} de ${MESES[selGen.getMonth()]}`;
+  $('[data-gen-cols]').innerHTML = DOCTORES.map((x) => {
+    const turnos = turnosDe(x.id, selGen, SOLIC);
+    const e = ocup(x.id, selGen), notas = NOTAS_TODOS[x.id]?.[f] || {};
+    const horas = turnos.flatMap(horasDeTurno);
+    const n = horas.filter((h) => estaOcupado(x.id, selGen, h)).length;
+    const cuerpo = !turnos.length ? '<p class="gen-vacio">No atiende este día.</p>'
+      : e.completo ? '<p class="gen-vacio gen-vacio--lleno">Día completo ocupado.</p>'
+      : turnos.map((t) => {
+        const otros = doctoresEnTurno(t, selGen, SOLIC).filter((o) => o !== x.id);
+        return `<p class="gen-turno">Turno ${TURNOS[t].nombre.toLowerCase()}${otros.length ? ` · con ${juntar(otros.map((o) => doctor(o).corto))}` : ''}</p>
+        <ul class="gen-horas">${horasDeTurno(t).map((h) => {
+          const oc = estaOcupado(x.id, selGen, h), nota = notas[String(h)];
+          return `<li class="${oc ? 'oc' : ''}${pasada(selGen, h) ? ' paso' : ''}"><span>${fmtHora(h)}</span><em>${oc ? (nota || 'Ocupada') : 'Libre'}</em></li>`;
+        }).join('')}</ul>`;
+      }).join('');
+    return `<article class="gen-col">
+      <header><img src="${x.foto}" alt="" width="44" height="44"><div><strong>${x.nombre}</strong>
+      <span>${turnos.length ? `${turnos.map((t) => TURNOS[t].nombre).join(' + ')} · ${n} de ${horas.length} ocupadas` : 'Sin turno'}</span></div></header>
+      ${cuerpo}</article>`;
+  }).join('');
+  const lista = [...SOLIC].sort((a, b) => (b.creada?.seconds || 0) - (a.creada?.seconds || 0)).slice(0, 15);
+  $('[data-gen-actividad]').innerHTML = lista.length ? lista.map((x) => `<li>
+    <span class="gen-estado gen-estado--${x.estado}">${ESTADOS[x.estado] || x.estado}</span>
+    ${x.estado === 'abierto'
+      ? `<b>${doctor(x.de)?.corto}</b> tomó el turno ${TURNOS[x.turno]?.nombre.toLowerCase()} del ${fechaCorta(x.fecha)}`
+      : `<b>${doctor(x.de)?.corto}</b> pidió unirse al turno ${TURNOS[x.turno]?.nombre.toLowerCase()} de <b>${doctor(x.para)?.corto}</b> · ${fechaCorta(x.fecha)}`}
+  </li>`).join('') : '<li class="gen-vacio">Todavía no hay solicitudes entre doctores.</li>';
+}
+generalEl.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-gi]');
+  if (b) { selGen = dias[+b.dataset.gi]; pintarGeneral(); }
+});
+function escucharNotasTodos() {
+  apagarGen.forEach((f) => f()); apagarGen = [];
+  if (demo) return;
+  apagarGen = DOCTORES.map((x) => escucharNotas(x.id, hoy, dias.at(-1), (m) => { NOTAS_TODOS[x.id] = m; if (YO === 'todos') pintarGeneral(); }));
+}
 
 // ----- Quién soy -----
 const selDoc = $('[data-elegir-doc]');
+let SOPORTE = false;
 function ponerDoctor(id) {
   YO = id;
+  selDoc.value = id;
+  const general = id === 'todos';
+  generalEl.hidden = !general;
+  cuerpoEl.hidden = general;
+  $('[data-bandeja]').hidden = true;
+  if (general) {
+    $('[data-yo-nombre]').textContent = SOPORTE ? 'Soporte' : 'Administración';
+    $('[data-yo-foto]').src = 'media/logo.png';
+    $('[data-yo-cargo]').textContent = 'Vista general en vivo';
+    apagarNotas(); apagarNotas = () => {};
+    escucharNotasTodos();
+    pintarGeneral();
+    return;
+  }
+  apagarGen.forEach((f) => f()); apagarGen = [];
   const d = doctor(id);
   $('[data-yo-nombre]').textContent = d.nombre;
   $('[data-yo-foto]').src = d.foto;
-  $('[data-yo-cargo]').textContent = d.cargo;
-  selDoc.value = id;
+  $('[data-yo-cargo]').textContent = SOPORTE ? `${d.cargo} · viendo como soporte` : d.cargo;
   if (!misHoras(sel).length) sel = dias.find((x) => misHoras(x).length) || dias[0];
   NOTAS = {};
   escucharMisNotas();
   pintarBandeja(); pintarLista(); pintarDia(true);
 }
-selDoc.innerHTML = DOCTORES.map((d) => `<option value="${d.id}">${d.nombre}</option>`).join('');
+selDoc.innerHTML = '<option value="todos">Vista general (todos)</option>' + DOCTORES.map((d) => `<option value="${d.id}">${d.nombre}</option>`).join('');
 selDoc.addEventListener('change', () => ponerDoctor(selDoc.value));
 
 // ----- Ingreso -----
@@ -310,7 +379,8 @@ function escucharMisNotas() {
 function abrirPanel(perfil) {
   ingreso.hidden = true;
   panel.hidden = false;
-  ADMIN = !!perfil.admin;
+  ADMIN = !!(perfil.admin || perfil.soporte);
+  SOPORTE = !!perfil.soporte;
   $('[data-solo-admin]').hidden = !ADMIN;
   if (!demo) {
     const hasta = dias.at(-1);
@@ -319,7 +389,7 @@ function abrirPanel(perfil) {
       escucharSolicitudes(hoy, hasta, (l) => { SOLIC = l; pintarTodo(); }),
     ];
   }
-  ponerDoctor(perfil.doctor || DOCTORES[0].id);
+  ponerDoctor(perfil.doctor || 'todos');
 }
 function sinVincular(u) {
   ingreso.hidden = false;
@@ -345,7 +415,8 @@ if (demo) {
     { id: 's2', de: 'd2', para: 'd1', fecha: f(2), turno: 'manana', estado: 'pendiente' },
     { id: 's3', de: 'd1', para: 'd3', fecha: f(4), turno: 'noche', estado: 'pendiente' },
   ];
-  abrirPanel({ doctor: yo, admin: params.has('admin') });
+  NOTAS_TODOS = { d1: NOTAS, d2: {}, d3: {} };
+  abrirPanel(params.has('soporte') ? { soporte: true } : { doctor: yo, admin: params.has('admin') });
 } else if (!configurado) {
   const aviso = $('[data-aviso]');
   aviso.hidden = false;
@@ -362,7 +433,7 @@ if (demo) {
     }
     let perfil = null;
     try { perfil = await leerPerfil(u.email); } catch (err) { console.error(err); }
-    if (perfil && (perfil.admin || doctor(perfil.doctor))) abrirPanel(perfil);
+    if (perfil && (perfil.admin || perfil.soporte || doctor(perfil.doctor))) abrirPanel(perfil);
     else sinVincular(u);
   });
   const errEl = $('[data-error-ingreso]');

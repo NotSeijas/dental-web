@@ -21,6 +21,6 @@ Sitio estático (HTML/CSS/JS). Vista previa: config `dental-web` en `E:\codex\.c
 - Para dar acceso a un doctor:
   1. Firebase → Authentication → Users → Add user (su correo y una contraseña).
   2. Firestore → Data → colección `medicos` → Add document con ID = su correo en minúsculas y campo `doctor` (string) = `d1`, `d2` o `d3`. Los correos reales de los tres doctores ya están vinculados (se ven en Firestore, no se guardan en este repo público).
-- La cuenta `diegoseijas@gmail.com` es administradora (`admin: true`): puede ver la agenda de cualquiera con el selector.
+- La cuenta `diegoseijas@gmail.com` es administradora (`admin: true`): puede ver la agenda de cualquiera con el selector. Las cuentas con `soporte: true` (además de `admin: true`) entran directo a la **Vista general**: los tres doctores, sus horas y notas, y las solicitudes entre doctores, en vivo.
 - Datos: `agenda/{doctor}/ocupado/{fecha}` (público), `agenda/{doctor}/notas/{fecha}` (privado), `solicitudes/{id}`, `medicos/{correo}`. Reglas en `firestore.rules` (pegadas en Firestore → Rules).
 - Vista de prueba sin login (solo en la compu): `http://localhost:6200/panel.html?demo=d2` (añade `&admin` para ver el selector).
