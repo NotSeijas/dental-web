@@ -187,7 +187,7 @@ function resumenTurnos(doc) {
   return Object.keys(TURNOS).map((t) => {
     const dias = [1, 2, 3, 4, 5, 6, 0].filter((x) => (doc.turnos[x] || []).includes(t));
     if (!dias.length) return '';
-    return `<li><b>${TURNOS[t].nombre}</b> ${rangoDias(dias)} · ${fmtHora(TURNOS[t].desde)} – ${fmtHora(TURNOS[t].hasta)}${porConfirmar(doc.id, t) ? ' <em>(por confirmar)</em>' : ''}</li>`;
+    return `<li><b>${TURNOS[t].nombre}</b> ${rangoDias(dias)} · ${fmtHora(TURNOS[t].desde)} – ${fmtHora(TURNOS[t].hasta)}${porConfirmar(doc.id, t) ? ' <em>(algunos días)</em>' : ''}</li>`;
   }).join('');
 }
 const nombreServ = nombreServicio;
@@ -363,8 +363,8 @@ function pintarHoras() {
   Object.keys(TURNOS).forEach((t) => {
     const hs = slots.filter((h) => turnoDeHora(h) === t);
     if (!hs.length) return;
-    horasEl.insertAdjacentHTML('beforeend', `<p class="horas__grupo">Turno ${TURNOS[t].nombre.toLowerCase()}${porConfirmar(cita.doctor, t) ? ' · por confirmar' : ''}</p>`
-      + (porConfirmar(cita.doctor, t) ? `<p class="horas__nota horas__nota--conf">${doctor(cita.doctor).corto} viene algunas ${TURNOS[t].nombre.toLowerCase()}s: te confirmamos por WhatsApp si puede atenderte.</p>` : ''));
+    horasEl.insertAdjacentHTML('beforeend', `<p class="horas__grupo">Turno ${TURNOS[t].nombre.toLowerCase()}${porConfirmar(cita.doctor, t) ? ' · algunos días' : ''}</p>`
+      + (porConfirmar(cita.doctor, t) ? `<p class="horas__nota horas__nota--conf">${doctor(cita.doctor).corto} viene solo algunas ${TURNOS[t].nombre.toLowerCase()}s: al confirmar tu cita te decimos si puede atenderte.</p>` : ''));
     const fila = document.createElement('div');
     fila.className = 'horas__fila';
     hs.forEach((h) => {
@@ -440,15 +440,17 @@ function enviar() {
     return;
   }
   const msg = [
-    'Hola, quiero reservar una cita:',
+    'Hola, quiero solicitar una cita (por confirmar):',
     `• Odontólogo: ${doctor(cita.doctor).nombre}`,
     `• Servicio: ${nombreServ(cita.servicio)}`,
     `• Día: ${fechaLarga(cita.dia)}`,
-    `• Hora: ${fmtHora(cita.hora)} (turno ${TURNOS[turnoDeHora(cita.hora)].nombre.toLowerCase()})${porConfirmar(cita.doctor, turnoDeHora(cita.hora)) ? ' · por confirmar con el doctor' : ''}`,
+    `• Hora: ${fmtHora(cita.hora)} (turno ${TURNOS[turnoDeHora(cita.hora)].nombre.toLowerCase()})${porConfirmar(cita.doctor, turnoDeHora(cita.hora)) ? ` · ${doctor(cita.doctor).corto} viene solo algunos días en este turno` : ''}`,
     `• Nombre: ${cita.nombre}`,
     `• Celular: ${cita.celular}`,
-    cita.comentario ? `• Comentario: ${cita.comentario}` : '',
-  ].filter(Boolean).join('\n');
+    cita.comentario ? `• Comentario: ${cita.comentario}` : null,
+    '',
+    'Quedo atento a la confirmación del odontólogo.',
+  ].filter((x) => x !== null).join('\n');
   tarjeta.classList.add('enviada');
   // Se abre en el mismo gesto del clic para que el navegador no lo bloquee
   window.open(waLink(msg), '_blank', 'noopener');

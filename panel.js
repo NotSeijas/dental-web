@@ -19,7 +19,7 @@ const fmtHora = (h) => {
 };
 const nombre = (id) => doctor(id)?.nombre || 'Otro doctor';
 // Nombre con aviso si ese turno es "por confirmar" para ese doctor
-const conConf = (id, t, txt) => (porConfirmar(id, t) ? `${txt} (por confirmar)` : txt);
+const conConf = (id, t, txt) => (porConfirmar(id, t) ? `${txt} (algunos días)` : txt);
 const fechaCorta = (f) => { const [y, m, d] = f.split('-').map(Number); const x = new Date(y, m - 1, d); return `${DIAS_CORTOS[x.getDay()]} ${d} ${MESES[m - 1].slice(0, 3)}`; };
 const juntar = (xs) => xs.length > 1 ? xs.slice(0, -1).join(', ') + ' y ' + xs.at(-1) : xs[0] || '';
 $$('[data-nombre]').forEach((el) => (el.textContent = NEGOCIO.nombre));
@@ -351,7 +351,7 @@ function pintarGeneral() {
       : e.completo ? '<p class="gen-vacio gen-vacio--lleno">Día completo ocupado.</p>'
       : turnos.map((t) => {
         const otros = doctoresEnTurno(t, selGen, SOLIC).filter((o) => o !== x.id);
-        return `<p class="gen-turno">Turno ${TURNOS[t].nombre.toLowerCase()}${porConfirmar(x.id, t) ? ' (por confirmar)' : ''}${otros.length ? ` · con ${juntar(otros.map((o) => conConf(o, t, doctor(o).corto)))}` : ''}</p>
+        return `<p class="gen-turno">Turno ${TURNOS[t].nombre.toLowerCase()}${porConfirmar(x.id, t) ? ' (algunos días)' : ''}${otros.length ? ` · con ${juntar(otros.map((o) => conConf(o, t, doctor(o).corto)))}` : ''}</p>
         <ul class="gen-horas">${horasDeTurno(t).map((h) => {
           const oc = estaOcupado(x.id, selGen, h), nota = notas[String(h)];
           return `<li class="${oc ? 'oc' : ''}${pasada(selGen, h) ? ' paso' : ''}"><span>${fmtHora(h)}</span><em>${oc ? (nota || 'Ocupada') : 'Libre'}</em></li>`;

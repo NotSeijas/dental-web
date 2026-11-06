@@ -2,9 +2,9 @@
 
 Sitio estático (HTML/CSS/JS). Vista previa: config `dental-web` en `E:\codex\.claude\launch.json`, puerto 6200. Publicado en https://notseijas.github.io/dental-web/.
 
-- `negocio.js`: nombre, WhatsApp, dirección, **servicios** (`SERVICIOS`), **turnos** (mañana 8–1, tarde 3–6, noche 6–9) y **odontólogos** (`DOCTORES`: nombre, foto, funciones y turnos fijos por día). El horario general de la clínica se arma solo con los turnos de los doctores. Roxana y Yenny: mañana, tarde y noche; Iván: tarde y noche, y mañanas **por confirmar** (`porConfirmar`): se puede reservar, pero la cita sale marcada para confirmarla por WhatsApp.
+- `negocio.js`: nombre, WhatsApp, dirección, **servicios** (`SERVICIOS`), **turnos** (mañana 8–1, tarde 3–6, noche 6–9) y **odontólogos** (`DOCTORES`: nombre, foto, funciones y turnos fijos por día). El horario general de la clínica se arma solo con los turnos de los doctores. Roxana y Yenny: mañana, tarde y noche; Iván: tarde y noche, y algunas mañanas (`porConfirmar`): se puede pedir cita, con un aviso de que viene solo algunos días.
 - `main.js`: mensajes rápidos de WhatsApp (`CHIPS`), sección Equipo y la reserva.
-- La reserva va así: odontólogo → servicio (solo los que realiza) → día → hora. Solo salen los días y horas en que atiende ese doctor, sin las que ya tiene ocupadas. La solicitud se envía por WhatsApp.
+- La reserva va así: odontólogo → servicio (solo los que realiza) → día → hora. Solo salen los días y horas en que atiende ese doctor, sin las que ya tiene ocupadas. Toda cita es una **solicitud por confirmar**: se envía por WhatsApp y el odontólogo la aprueba.
 - Colores y logo tomados del logo YENMAR (`media/logo.png`, `logo-blanco.png`, `logo-yenmar.png`). Retratos de doctores: `media/doc-1..3.jpg`; fotos reales con pacientes: `media/r-*.jpg`.
 
 ## Por confirmar con el cliente
