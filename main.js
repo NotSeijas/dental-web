@@ -187,7 +187,7 @@ function resumenTurnos(doc) {
   return Object.keys(TURNOS).map((t) => {
     const dias = [1, 2, 3, 4, 5, 6, 0].filter((x) => (doc.turnos[x] || []).includes(t));
     if (!dias.length) return '';
-    return `<li><b>${TURNOS[t].nombre}</b> ${rangoDias(dias)} · ${fmtHora(TURNOS[t].desde)} – ${fmtHora(TURNOS[t].hasta)}</li>`;
+    return `<li><b>${TURNOS[t].nombre}</b> ${rangoDias(dias)} · ${fmtHora(TURNOS[t].desde)} – ${fmtHora(TURNOS[t].hasta)}${porConfirmar(doc.id, t) ? ' <em>(por confirmar)</em>' : ''}</li>`;
   }).join('');
 }
 const nombreServ = nombreServicio;
@@ -363,7 +363,8 @@ function pintarHoras() {
   Object.keys(TURNOS).forEach((t) => {
     const hs = slots.filter((h) => turnoDeHora(h) === t);
     if (!hs.length) return;
-    horasEl.insertAdjacentHTML('beforeend', `<p class="horas__grupo">Turno ${TURNOS[t].nombre.toLowerCase()}</p>`);
+    horasEl.insertAdjacentHTML('beforeend', `<p class="horas__grupo">Turno ${TURNOS[t].nombre.toLowerCase()}${porConfirmar(cita.doctor, t) ? ' · por confirmar' : ''}</p>`
+      + (porConfirmar(cita.doctor, t) ? `<p class="horas__nota horas__nota--conf">${doctor(cita.doctor).corto} viene algunas ${TURNOS[t].nombre.toLowerCase()}s: te confirmamos por WhatsApp si puede atenderte.</p>` : ''));
     const fila = document.createElement('div');
     fila.className = 'horas__fila';
     hs.forEach((h) => {
@@ -443,7 +444,7 @@ function enviar() {
     `• Odontólogo: ${doctor(cita.doctor).nombre}`,
     `• Servicio: ${nombreServ(cita.servicio)}`,
     `• Día: ${fechaLarga(cita.dia)}`,
-    `• Hora: ${fmtHora(cita.hora)} (turno ${TURNOS[turnoDeHora(cita.hora)].nombre.toLowerCase()})`,
+    `• Hora: ${fmtHora(cita.hora)} (turno ${TURNOS[turnoDeHora(cita.hora)].nombre.toLowerCase()})${porConfirmar(cita.doctor, turnoDeHora(cita.hora)) ? ' · por confirmar con el doctor' : ''}`,
     `• Nombre: ${cita.nombre}`,
     `• Celular: ${cita.celular}`,
     cita.comentario ? `• Comentario: ${cita.comentario}` : '',

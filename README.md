@@ -2,14 +2,13 @@
 
 Sitio estático (HTML/CSS/JS). Vista previa: config `dental-web` en `E:\codex\.claude\launch.json`, puerto 6200. Publicado en https://notseijas.github.io/dental-web/.
 
-- `negocio.js`: nombre, WhatsApp, dirección, **servicios** (`SERVICIOS`), **turnos** (mañana 8–1, tarde 3–6, noche 6–9) y **odontólogos** (`DOCTORES`: nombre, foto, funciones y turnos fijos por día). El horario general de la clínica se arma solo con los turnos de los doctores.
+- `negocio.js`: nombre, WhatsApp, dirección, **servicios** (`SERVICIOS`), **turnos** (mañana 8–1, tarde 3–6, noche 6–9) y **odontólogos** (`DOCTORES`: nombre, foto, funciones y turnos fijos por día). El horario general de la clínica se arma solo con los turnos de los doctores. Roxana y Yenny: mañana, tarde y noche; Iván: tarde y noche, y mañanas **por confirmar** (`porConfirmar`): se puede reservar, pero la cita sale marcada para confirmarla por WhatsApp.
 - `main.js`: mensajes rápidos de WhatsApp (`CHIPS`), sección Equipo y la reserva.
 - La reserva va así: odontólogo → servicio (solo los que realiza) → día → hora. Solo salen los días y horas en que atiende ese doctor, sin las que ya tiene ocupadas. La solicitud se envía por WhatsApp.
 - Colores y logo tomados del logo YENMAR (`media/logo.png`, `logo-blanco.png`, `logo-yenmar.png`). Retratos de doctores: `media/doc-1..3.jpg`; fotos reales con pacientes: `media/r-*.jpg`.
 
 ## Por confirmar con el cliente
 
-- Qué turno atiende cada doctor (hoy: Roxana mañana, Yenny tarde, Iván noche, de lunes a sábado).
 - Fotos reales de los ambientes del consultorio (sección Consultorio).
 
 ## Panel de odontólogos (Firebase)

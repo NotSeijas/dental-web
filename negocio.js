@@ -98,9 +98,10 @@ const nombreServicio = (id) => SERVICIOS.find((x) => x.id === id)?.nombre || id;
 const serviciosSin = (...no) => SERVICIOS.map((s) => s.id).filter((id) => !no.includes(id));
 const escHtml = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-// ===== Odontólogos (turnos POR CONFIRMAR) =====
+// ===== Odontólogos =====
 // funciones: ids de servicios que realiza (cada doctor los cambia desde su panel)
 // turnos: 0 = domingo … 6 = sábado → turnos fijos de cada día
+// porConfirmar: turnos en que el doctor va solo algunos días; la cita se confirma por WhatsApp
 const DOCTORES = [
   {
     id: 'd1', nombre: 'Dra. Roxana Seijas Figueroa', corto: 'Dra. Roxana', cargo: 'Cirujana dentista', foto: 'media/doc-1.jpg',
@@ -112,7 +113,7 @@ const DOCTORES = [
       '¡Bienvenido! Soy Roxana y me encanta ver sonrisas sanas.',
     ],
     funciones: serviciosSin('cirugia', 'ortodoncia'),
-    turnos: { 1: ['manana'], 2: ['manana'], 3: ['manana'], 4: ['manana'], 5: ['manana'], 6: ['manana'] },
+    turnos: { 1: ['manana', 'tarde', 'noche'], 2: ['manana', 'tarde', 'noche'], 3: ['manana', 'tarde', 'noche'], 4: ['manana', 'tarde', 'noche'], 5: ['manana', 'tarde', 'noche'], 6: ['manana', 'tarde', 'noche'] },
   },
   {
     id: 'd2', nombre: 'Dra. Yenny Meza Morales', corto: 'Dra. Yenny', cargo: 'Cirujana dentista', foto: 'media/doc-2.jpg',
@@ -124,7 +125,7 @@ const DOCTORES = [
       'Hola, soy Yenny. Tranquilo, vamos a tu ritmo.',
     ],
     funciones: serviciosSin('ortodoncia'),
-    turnos: { 1: ['tarde'], 2: ['tarde'], 3: ['tarde'], 4: ['tarde'], 5: ['tarde'], 6: ['tarde'] },
+    turnos: { 1: ['manana', 'tarde', 'noche'], 2: ['manana', 'tarde', 'noche'], 3: ['manana', 'tarde', 'noche'], 4: ['manana', 'tarde', 'noche'], 5: ['manana', 'tarde', 'noche'], 6: ['manana', 'tarde', 'noche'] },
   },
   {
     id: 'd3', nombre: 'Dr. Iván Meza Morales', corto: 'Dr. Iván', cargo: 'Cirujano dentista', foto: 'media/doc-3.jpg',
@@ -136,10 +137,13 @@ const DOCTORES = [
       'Hola, soy Iván. Vamos a devolverle la fuerza a tu sonrisa.',
     ],
     funciones: serviciosSin(),
-    turnos: { 1: ['noche'], 2: ['noche'], 3: ['noche'], 4: ['noche'], 5: ['noche'], 6: ['noche'] },
+    turnos: { 1: ['manana', 'tarde', 'noche'], 2: ['manana', 'tarde', 'noche'], 3: ['manana', 'tarde', 'noche'], 4: ['manana', 'tarde', 'noche'], 5: ['manana', 'tarde', 'noche'], 6: ['manana', 'tarde', 'noche'] },
+    porConfirmar: ['manana'],
   },
 ];
 const doctor = (id) => DOCTORES.find((x) => x.id === id);
+// ¿Ese turno del doctor es "por confirmar"?
+const porConfirmar = (docId, t) => (doctor(docId)?.porConfirmar || []).includes(t);
 // Servicios que cada doctor guardó en su panel (agenda/{doctor}.servicios): reemplazan a los de arriba
 function aplicarServicios(mapa) {
   DOCTORES.forEach((d) => {

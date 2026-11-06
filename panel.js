@@ -18,6 +18,8 @@ const fmtHora = (h) => {
   return `${((hh + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'a. m.' : 'p. m.'}`;
 };
 const nombre = (id) => doctor(id)?.nombre || 'Otro doctor';
+// Nombre con aviso si ese turno es "por confirmar" para ese doctor
+const conConf = (id, t, txt) => (porConfirmar(id, t) ? `${txt} (por confirmar)` : txt);
 const fechaCorta = (f) => { const [y, m, d] = f.split('-').map(Number); const x = new Date(y, m - 1, d); return `${DIAS_CORTOS[x.getDay()]} ${d} ${MESES[m - 1].slice(0, 3)}`; };
 const juntar = (xs) => xs.length > 1 ? xs.slice(0, -1).join(', ') + ' y ' + xs.at(-1) : xs[0] || '';
 $$('[data-nombre]').forEach((el) => (el.textContent = NEGOCIO.nombre));
@@ -196,8 +198,8 @@ function pintarTurnos() {
     let clase = '', estadoTxt, accion = '';
     if (en.includes(YO)) {
       clase = 'mio';
-      estadoTxt = fijos.includes(YO) ? 'Tu turno' : 'Te uniste a este turno';
-      if (otros.length) estadoTxt += ` · con ${juntar(otros.map(nombre))}`;
+      estadoTxt = fijos.includes(YO) ? conConf(YO, t, 'Tu turno') : 'Te uniste a este turno';
+      if (otros.length) estadoTxt += ` · con ${juntar(otros.map((o) => conConf(o, t, nombre(o))))}`;
       if (mia && !fijos.includes(YO)) accion = `<button class="enlace" type="button" data-resp="cancelada" data-id="${mia.id}">Dejar turno</button>`;
     } else if (mia?.estado === 'pendiente') {
       clase = 'espera';
@@ -254,7 +256,7 @@ function pintarDia(nuevo = false) {
     firma = nuevaFirma;
     horarioEl.innerHTML = turnos.map((t) => {
       const otros = doctoresEnTurno(t, sel, SOLIC).filter((x) => x !== YO);
-      return `<div class="grupo"><p class="grupo__titulo">Turno ${TURNOS[t].nombre.toLowerCase()}${otros.length ? ` · compartido con ${juntar(otros.map(nombre))}` : ''}</p>
+      return `<div class="grupo"><p class="grupo__titulo">Turno ${TURNOS[t].nombre.toLowerCase()}${otros.length ? ` · compartido con ${juntar(otros.map((o) => conConf(o, t, nombre(o))))}` : ''}</p>
         ${otros.length ? '<p class="grupo__juntos" data-juntos></p>' : ''}
         ${horasDeTurno(t).map((h) => `<div class="fila" data-h="${h}">
           <button type="button" class="hora" data-toggle aria-pressed="false">
@@ -349,7 +351,7 @@ function pintarGeneral() {
       : e.completo ? '<p class="gen-vacio gen-vacio--lleno">Día completo ocupado.</p>'
       : turnos.map((t) => {
         const otros = doctoresEnTurno(t, selGen, SOLIC).filter((o) => o !== x.id);
-        return `<p class="gen-turno">Turno ${TURNOS[t].nombre.toLowerCase()}${otros.length ? ` · con ${juntar(otros.map((o) => doctor(o).corto))}` : ''}</p>
+        return `<p class="gen-turno">Turno ${TURNOS[t].nombre.toLowerCase()}${porConfirmar(x.id, t) ? ' (por confirmar)' : ''}${otros.length ? ` · con ${juntar(otros.map((o) => conConf(o, t, doctor(o).corto)))}` : ''}</p>
         <ul class="gen-horas">${horasDeTurno(t).map((h) => {
           const oc = estaOcupado(x.id, selGen, h), nota = notas[String(h)];
           return `<li class="${oc ? 'oc' : ''}${pasada(selGen, h) ? ' paso' : ''}"><span>${fmtHora(h)}</span><em>${oc ? (nota || 'Ocupada') : 'Libre'}</em></li>`;

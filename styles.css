@@ -831,3 +831,7 @@ body.cargando .gotita { opacity: 0; }
 .foto-equipo__marco h2 { margin: 0; font-family: var(--display); font-size: clamp(1.6rem, 3.6vw, 2.8rem); letter-spacing: -0.02em; }
 .foto-equipo__marco p { margin: 6px 0 0; color: #dfeaf3; font-size: clamp(0.88rem, 1.5vw, 1.05rem); }
 @media (max-width: 600px) { .foto-equipo__marco img { aspect-ratio: 4 / 3.4; object-position: 60% top; } }
+
+/* Turno por confirmar (el doctor va solo algunos días) */
+.horas__nota--conf { margin: 0 0 8px; color: #8a6100; }
+.doc__turnos em { font-style: normal; color: var(--tinta-2, #5b6b7a); font-size: 0.9em; }
