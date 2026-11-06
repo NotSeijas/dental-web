@@ -29,6 +29,8 @@ export const claveFecha = (d) =>
 // solicitudes/{id}                 = { de, para, fecha, turno, estado }  → unirse al turno de otro doctor
 // medicos/{correo}                 = { doctor: 'd1' } o { admin: true }  → qué doctor es cada cuenta
 // agenda/{doctor}                  = { servicios: ['limpieza', …] }     → público, solo ese doctor lo cambia
+// citas/{id}                       = { doctor, servicio, fecha, hora, turno, nombre, celular, comentario, estado }
+//                                    → la crea el paciente desde la web; solo la ve y responde su doctor
 const rango = (col, desde, hasta) =>
   query(col, where(documentId(), '>=', claveFecha(desde)), where(documentId(), '<=', claveFecha(hasta)));
 
@@ -105,4 +107,23 @@ export function escucharServicios(ids, cb) {
 
 export function guardarServicios(docId, servicios) {
   return setDoc(doc(db, 'agenda', docId), { servicios, actualizado: serverTimestamp() });
+}
+
+// ----- Solicitudes de cita de los pacientes (las aprueba el doctor) -----
+export function crearCita(c) {
+  return addDoc(collection(db, 'citas'), { ...c, estado: 'pendiente', creada: serverTimestamp() });
+}
+
+export function escucharCitas(docId, cb) {
+  if (!db) return () => {};
+  const q = query(collection(db, 'citas'), where('doctor', '==', docId), where('estado', '==', 'pendiente'));
+  return onSnapshot(q, (snap) => {
+    const lista = [];
+    snap.forEach((d) => lista.push({ id: d.id, ...d.data() }));
+    cb(lista);
+  }, (err) => console.warn('Citas no disponibles:', err.message));
+}
+
+export function responderCita(id, estado) {
+  return updateDoc(doc(db, 'citas', id), { estado, respondida: serverTimestamp() });
 }

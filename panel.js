@@ -2,6 +2,7 @@
 import {
   app, configurado, escucharTodos, escucharNotas, escucharSolicitudes,
   guardarOcupado, guardarNota, crearSolicitud, cambiarSolicitud, leerPerfil, escucharServicios, guardarServicios,
+  escucharCitas, responderCita,
 } from './agenda.js';
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence,
@@ -76,11 +77,84 @@ const api = demo
     crear: async (s) => { SOLIC = [...SOLIC, { id: 'demo' + ++idDemo, ...s }]; pintarTodo(); },
     cambiar: async (id, e) => { SOLIC = SOLIC.map((s) => (s.id === id ? { ...s, estado: e } : s)); pintarTodo(); },
     servicios: async () => {},
+    responderCita: async () => {},
   }
   : {
     ocupado: guardarOcupado, nota: guardarNota,
-    crear: crearSolicitud, cambiar: cambiarSolicitud, servicios: guardarServicios,
+    crear: crearSolicitud, cambiar: cambiarSolicitud, servicios: guardarServicios, responderCita,
   };
+
+// ----- Citas que piden los pacientes: el doctor las aprueba o rechaza -----
+const citasEl = $('[data-citas]');
+let CITAS = {};            // { d1: [cita pendiente, …], … }
+let apagarCitas = [];
+const fechaDe = (f) => { const [y, m, d] = f.split('-').map(Number); return new Date(y, m - 1, d); };
+const fechaLarga = (d) => `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`;
+const verCitasDe = () => (YO === 'todos' ? DOCTORES.map((x) => x.id) : [YO]);
+const tituloBase = document.title;
+function escucharMisCitas() {
+  apagarCitas.forEach((f) => f()); apagarCitas = [];
+  if (demo) return;
+  apagarCitas = verCitasDe().map((id) => escucharCitas(id, (l) => { CITAS[id] = l; pintarCitas(); }));
+}
+function pintarCitas() {
+  const lista = verCitasDe().flatMap((id) => CITAS[id] || [])
+    .sort((a, b) => a.fecha.localeCompare(b.fecha) || a.hora - b.hora);
+  document.title = lista.length ? `(${lista.length}) ${tituloBase}` : tituloBase;
+  citasEl.hidden = !lista.length;
+  citasEl.innerHTML = `<p class="citas__titulo">Citas por confirmar <span>${lista.length}</span></p>` + lista.map((c) => {
+    const d = fechaDe(c.fecha);
+    const yaPaso = c.fecha < claveFecha(hoy);
+    const choque = !yaPaso && estaOcupado(c.doctor, d, c.hora);
+    return `<article class="cita${yaPaso ? ' cita--paso' : ''}">
+      <div class="cita__cuando">
+        <b>${fechaCorta(c.fecha)}</b><span>${fmtHora(c.hora)}</span><small>Turno ${(TURNOS[c.turno]?.nombre || '').toLowerCase()}</small>
+      </div>
+      <div class="cita__info">
+        <p class="cita__nombre">${escHtml(c.nombre)}${YO === 'todos' ? ` <small>· con ${doctor(c.doctor)?.corto || ''}</small>` : ''}</p>
+        <p class="cita__serv">${escHtml(c.servicio)}</p>
+        ${c.comentario ? `<p class="cita__coment">“${escHtml(c.comentario)}”</p>` : '<p class="cita__coment cita__coment--vacio">No dejó comentario.</p>'}
+        <a class="cita__cel" href="https://wa.me/51${c.celular}" target="_blank" rel="noopener">WhatsApp ${c.celular.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3')}</a>
+        ${yaPaso ? '<p class="cita__aviso">Esta fecha ya pasó.</p>' : choque ? '<p class="cita__aviso">Ojo: esa hora ya la tienes marcada como ocupada.</p>' : ''}
+      </div>
+      <div class="cita__acciones">
+        <button class="boton boton--chico" type="button" data-cita="aprobada" data-id="${c.id}">Aprobar</button>
+        <button class="boton boton--chico boton--suave" type="button" data-cita="rechazada" data-id="${c.id}">Rechazar</button>
+      </div>
+    </article>`;
+  }).join('');
+}
+citasEl.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-cita]');
+  if (!b) return;
+  const c = Object.values(CITAS).flat().find((x) => x.id === b.dataset.id);
+  if (!c) return;
+  const ok = b.dataset.cita === 'aprobada';
+  const doc = doctor(c.doctor), d = fechaDe(c.fecha);
+  const cuando = `el ${fechaLarga(d)} a las ${fmtHora(c.hora)}`;  // fmtHora ya termina en «m.»: no repetir el punto
+  const txt = ok
+    ? `Hola ${c.nombre}, te saluda ${doc.nombre} del Centro Odontológico ${NEGOCIO.nombre}. Tu cita de ${c.servicio.toLowerCase()} quedó *confirmada* para ${cuando} Te esperamos en ${NEGOCIO.direccion}.`
+    : `Hola ${c.nombre}, te saluda ${doc.nombre} del Centro Odontológico ${NEGOCIO.nombre}. No podré atenderte ${cuando} ¿Te acomoda otro día u hora?`;
+  // Se abre en el mismo clic para avisarle al paciente por WhatsApp
+  window.open(`https://wa.me/51${c.celular}?text=${encodeURIComponent(txt)}`, '_blank', 'noopener');
+  CITAS[c.doctor] = (CITAS[c.doctor] || []).filter((x) => x.id !== c.id);
+  pintarCitas();
+  guardar((async () => {
+    await api.responderCita(c.id, b.dataset.cita);
+    if (!ok) return;
+    // Al aprobar, esa hora queda ocupada y con la nota del paciente
+    const e2 = ocup(c.doctor, d);
+    if (!e2.completo && !e2.horas.includes(c.hora)) {
+      const v = { completo: false, horas: [...e2.horas, c.hora] };
+      (TODOS[c.doctor] ||= {})[c.fecha] = v;
+      await api.ocupado(c.doctor, c.fecha, v);
+    }
+    const nota = `${c.nombre} · ${c.servicio} · ${c.celular}`;
+    if (c.doctor === YO) (NOTAS[c.fecha] ||= {})[String(c.hora)] = nota;
+    await api.nota(c.doctor, c.fecha, c.hora, nota);
+    pintarTodo();
+  })());
+});
 
 // ----- Mis servicios: cada doctor marca los que realiza y puede agregar otros -----
 const servEl = $('[data-servicios]');
@@ -387,6 +461,8 @@ function ponerDoctor(id) {
   YO = id;
   selDoc.value = id;
   pintarMisServicios();
+  escucharMisCitas();
+  pintarCitas();
   const general = id === 'todos';
   generalEl.hidden = !general;
   cuerpoEl.hidden = general;
@@ -462,6 +538,14 @@ if (demo) {
     { id: 's3', de: 'd1', para: 'd3', fecha: f(4), turno: 'noche', estado: 'pendiente' },
   ];
   NOTAS_TODOS = { d1: NOTAS, d2: {}, d3: {} };
+  CITAS = {
+    d1: [
+      { id: 'c1', doctor: 'd1', servicio: 'Limpieza dental', fecha: f(1), hora: 9, turno: 'manana', nombre: 'María Gómez', celular: '987654321', comentario: 'Me sangran las encías cuando me cepillo.' },
+      { id: 'c2', doctor: 'd1', servicio: 'Odontopediatría', fecha: f(2), hora: 16.5, turno: 'tarde', nombre: 'Carlos Ruiz', celular: '912345678', comentario: 'Es para mi hijo de 6 años, le duele una muela.' },
+    ],
+    d2: [{ id: 'c3', doctor: 'd2', servicio: 'Carillas', fecha: f(1), hora: 19, turno: 'noche', nombre: 'Lucía Paredes', celular: '956789123', comentario: '' }],
+    d3: [{ id: 'c4', doctor: 'd3', servicio: 'Ortodoncia con brackets', fecha: f(3), hora: 10, turno: 'manana', nombre: 'Jorge Díaz', celular: '934567812', comentario: 'Quiero saber el precio y cuánto dura el tratamiento.' }],
+  };
   abrirPanel(params.has('soporte') ? { soporte: true } : { doctor: yo, admin: params.has('admin') });
 } else if (!configurado) {
   const aviso = $('[data-aviso]');
@@ -472,6 +556,7 @@ if (demo) {
   setPersistence(auth, browserLocalPersistence);
   onAuthStateChanged(auth, async (u) => {
     apagar.forEach((f) => f()); apagar = []; apagarNotas();
+    apagarCitas.forEach((f) => f()); apagarCitas = []; CITAS = {}; pintarCitas();
     if (!u) {
       panel.hidden = true; ingreso.hidden = false;
       $('[data-form-ingreso]').hidden = false; $('[data-sin-vincular]').hidden = true;

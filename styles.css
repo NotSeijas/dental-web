@@ -430,16 +430,16 @@ body:not(.cargando) .carga__in { opacity: 0; transform: translateY(-60px); }
 .paso { margin: 0; border: 0; padding: 22px; border-radius: var(--radio); background: rgba(255, 255, 255, 0.06); min-width: 0; }
 .paso legend { float: left; width: 100%; padding: 0; margin-bottom: 14px; font-family: var(--display); font-weight: 700; font-size: 1.2rem; }
 .paso > :not(legend) { clear: both; }
-.paso select, .campo input {
+.paso select, .campo input, .campo textarea {
   width: 100%; min-height: 52px; padding: 0 16px; border-radius: var(--radio-s);
   border: 1.5px solid rgba(255, 255, 255, 0.18); background: rgba(5, 30, 50, 0.35); color: #fff;
   transition: border-color 150ms;
 }
 .paso select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238cc21f' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-size: 20px; padding-right: 44px; }
 .paso select option { color: var(--tinta); background: #fff; }
-.paso select:hover, .campo input:hover { border-color: rgba(255, 255, 255, 0.35); }
-.paso select:focus-visible, .campo input:focus-visible { outline: none; border-color: var(--hoja); }
-.campo input::placeholder { color: #8fb0c6; }
+.paso select:hover, .campo input:hover, .campo textarea:hover { border-color: rgba(255, 255, 255, 0.35); }
+.paso select:focus-visible, .campo input:focus-visible, .campo textarea:focus-visible { outline: none; border-color: var(--hoja); }
+.campo input::placeholder, .campo textarea::placeholder { color: #8fb0c6; }
 
 .dias { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) transparent; }
 .dia {
@@ -836,3 +836,10 @@ body.cargando .gotita { opacity: 0; }
 .horas__nota--conf { margin: 0 0 8px; color: #ffe08a; }
 .doc__turnos em { font-style: normal; color: var(--tinta-2, #5b6b7a); font-size: 0.9em; }
 .tarjeta__estado { margin-left: auto; padding: 4px 10px; border-radius: 999px; background: #fff3cd; color: #8a6100; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+
+/* Solicitud enviada al panel del doctor */
+.campo textarea { resize: vertical; min-height: 64px; font: inherit; line-height: 1.4; }
+.tarjeta__ok { margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: var(--hoja-clara); color: #2f4708; font-size: 0.9rem; }
+.tarjeta__ok p { margin: 0 0 6px; }
+.tarjeta__wa { color: var(--azul-fuerte); font-weight: 600; font-size: 0.86rem; }
+.tarjeta__enviar:disabled { opacity: 0.7; cursor: wait; }

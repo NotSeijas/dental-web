@@ -241,3 +241,30 @@ button, input { font: inherit; color: inherit; }
 .serv--otro button:hover { color: var(--rojo); }
 .serv-otro { display: flex; gap: 8px; max-width: 460px; }
 .serv-otro input { flex: 1; min-width: 0; padding: 10px 12px; border: 1.5px solid var(--linea); border-radius: 12px; font: inherit; }
+
+/* ===== Citas por confirmar (pedidas por los pacientes) ===== */
+.citas { max-width: 1200px; margin: 20px auto 0; padding: 0 clamp(16px, 3vw, 32px); display: grid; gap: 10px; }
+.citas__titulo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinta-2); }
+.citas__titulo span { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: #f0b429; color: #fff; text-align: center; letter-spacing: 0; }
+.cita { display: grid; grid-template-columns: 120px 1fr auto; gap: 16px; align-items: start; padding: 14px 16px; background: #fff; border: 1px solid #f3dc9b; border-left: 4px solid #f0b429; border-radius: 16px; }
+.cita--paso { opacity: 0.6; }
+.cita__cuando { display: grid; line-height: 1.25; }
+.cita__cuando b { font-family: var(--display); color: var(--azul-hondo); }
+.cita__cuando span { font-size: 1.15rem; font-weight: 700; color: var(--azul-hondo); }
+.cita__cuando small { color: var(--tinta-2); font-size: 0.78rem; }
+.cita__info { display: grid; gap: 3px; min-width: 0; }
+.cita__info p { margin: 0; }
+.cita__nombre { font-weight: 700; font-size: 1.02rem; }
+.cita__nombre small { font-weight: 500; color: var(--tinta-2); }
+.cita__serv { color: var(--azul); font-weight: 600; font-size: 0.92rem; }
+.cita__coment { color: var(--tinta); font-size: 0.92rem; overflow-wrap: anywhere; }
+.cita__coment--vacio { color: var(--tinta-2); font-style: italic; }
+.cita__cel { justify-self: start; margin-top: 2px; color: #178a4c; font-weight: 600; font-size: 0.88rem; }
+.cita__aviso { color: #a3264a; font-size: 0.84rem; font-weight: 600; }
+.cita__acciones { display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 640px) {
+  .cita { grid-template-columns: 1fr; gap: 8px; }
+  .cita__cuando { grid-template-columns: auto auto 1fr; gap: 8px; align-items: baseline; }
+  .cita__acciones { flex-direction: row; }
+  .cita__acciones .boton { flex: 1; }
+}

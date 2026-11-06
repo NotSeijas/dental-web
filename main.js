@@ -421,10 +421,12 @@ function pintarTarjeta() {
   pon('[data-t-dia]', cita.dia ? fechaLarga(cita.dia) : '');
   pon('[data-t-hora]', cita.hora != null ? fmtHora(cita.hora) : '');
   tarjeta.classList.remove('enviada');
+  $('[data-ok]').hidden = true;
+  $('[data-nota]').hidden = false;
   $('[data-error]').textContent = '';
 }
 
-function enviar() {
+async function enviar() {
   const faltan = [];
   if (!cita.doctor) faltan.push('el odontólogo');
   if (!cita.servicio) faltan.push('el servicio');
@@ -439,7 +441,40 @@ function enviar() {
     tarjeta.classList.remove('sacude'); void tarjeta.offsetWidth; tarjeta.classList.add('sacude');
     return;
   }
-  const msg = [
+  const msg = mensajeWa();
+  const btn = $('[data-enviar]'), btnTxt = $('[data-enviar-txt]');
+  // Sin Firebase: la solicitud se manda por WhatsApp como antes
+  if (!window.enviarCita) {
+    tarjeta.classList.add('enviada');
+    window.open(waLink(msg), '_blank', 'noopener');
+    return;
+  }
+  if (btn.disabled) return;
+  btn.disabled = true; btnTxt.textContent = 'Enviando…';
+  try {
+    await window.enviarCita({
+      doctor: cita.doctor,
+      servicio: nombreServ(cita.servicio),
+      fecha: claveFecha(cita.dia),
+      hora: cita.hora,
+      turno: turnoDeHora(cita.hora),
+      nombre: cita.nombre.slice(0, 80),
+      celular: cita.celular,
+      comentario: cita.comentario.slice(0, 300),
+    });
+    tarjeta.classList.add('enviada');
+    $('[data-ok-txt]').textContent = `Le llegó a ${doctor(cita.doctor).nombre}. Cuando la apruebe te escribiremos al ${cita.celular} para confirmar tu cita.`;
+    $('[data-ok-wa]').href = waLink(msg);
+    $('[data-ok]').hidden = false;
+    $('[data-nota]').hidden = true;
+  } catch (e2) {
+    console.error(e2);
+    err.innerHTML = `No se pudo enviar tu solicitud. Revisa tu internet o <a href="${waLink(msg)}" target="_blank" rel="noopener">envíala por WhatsApp</a>.`;
+  }
+  btn.disabled = false; btnTxt.textContent = 'Enviar solicitud';
+}
+function mensajeWa() {
+  return [
     'Hola, quiero solicitar una cita (por confirmar):',
     `• Odontólogo: ${doctor(cita.doctor).nombre}`,
     `• Servicio: ${nombreServ(cita.servicio)}`,
@@ -451,9 +486,6 @@ function enviar() {
     '',
     'Quedo atento a la confirmación del odontólogo.',
   ].filter((x) => x !== null).join('\n');
-  tarjeta.classList.add('enviada');
-  // Se abre en el mismo gesto del clic para que el navegador no lo bloquee
-  window.open(waLink(msg), '_blank', 'noopener');
 }
 $('[data-enviar]').addEventListener('click', enviar);
 pintarServicios();
