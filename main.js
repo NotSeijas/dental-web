@@ -1,82 +1,9 @@
-const SERVICIOS = [
-  {
-    id: 'evaluacion', nombre: 'Evaluación y diagnóstico', img: 'r-ivan-atiende',
-    alt: 'El Dr. Iván evaluando a una paciente',
-    desc: 'El punto de partida: revisamos dientes, encías y mordida, y te damos un plan claro con presupuesto antes de empezar cualquier tratamiento.',
-    incluye: ['Examen clínico completo', 'Radiografías si hacen falta', 'Plan de tratamiento y presupuesto'],
-    dur: '30 a 40 minutos',
-  },
-  {
-    id: 'limpieza', nombre: 'Limpieza dental', img: 'limpieza',
-    alt: 'Limpieza dental con espejo y explorador',
-    desc: 'Retiramos el sarro y la placa que el cepillo no alcanza, pulimos y protegemos tus dientes con flúor. Recomendada cada seis meses.',
-    incluye: ['Destartraje con ultrasonido', 'Pulido y profilaxis', 'Aplicación de flúor'],
-    dur: '45 minutos',
-  },
-  {
-    id: 'blanqueamiento', nombre: 'Blanqueamiento', img: 'blanqueamiento',
-    alt: 'Sonrisa con dientes blancos',
-    desc: 'Aclaramos el tono de tus dientes de forma segura, en consultorio y con indicaciones para mantener el resultado en casa.',
-    incluye: ['Evaluación previa del esmalte', 'Sesión en consultorio', 'Cuidados para casa'],
-    dur: '60 a 90 minutos',
-  },
-  {
-    id: 'ortodoncia', nombre: 'Ortodoncia con brackets', img: 'ortodoncia',
-    alt: 'Paciente con brackets durante un control',
-    desc: 'Alineamos tus dientes y corregimos la mordida con brackets metálicos o estéticos, con controles mensuales durante todo el tratamiento.',
-    incluye: ['Estudio de ortodoncia', 'Brackets metálicos o estéticos', 'Controles mensuales'],
-    dur: 'Controles de 20 a 30 minutos',
-  },
-  {
-    id: 'alineadores', nombre: 'Alineadores invisibles', img: 'alineadores',
-    alt: 'Persona colocándose un alineador transparente',
-    desc: 'Placas transparentes que mueven tus dientes poco a poco, casi sin que se noten. Te las quitas para comer y cepillarte.',
-    incluye: ['Escaneo y plan digital', 'Juego de alineadores', 'Controles de avance'],
-    dur: 'Evaluación de 40 minutos',
-  },
-  {
-    id: 'implantes', nombre: 'Implantes dentales', img: 'implantes',
-    alt: 'Modelo de un implante dental entre dientes naturales',
-    desc: 'Reemplazamos el diente que falta con una raíz de titanio y una corona fija que se ve y se siente como un diente propio.',
-    incluye: ['Evaluación con radiografía', 'Colocación del implante', 'Corona definitiva'],
-    dur: 'Según el plan de tratamiento',
-  },
-  {
-    id: 'endodoncia', nombre: 'Endodoncia y curaciones', img: 'restauracion',
-    alt: 'Modelo de un diente mostrando la raíz y el nervio',
-    desc: 'Tratamos caries y dientes con dolor para conservarlos: curaciones con resina del color del diente y tratamiento de conducto.',
-    incluye: ['Curaciones con resina', 'Tratamiento de conducto', 'Reconstrucción del diente'],
-    dur: '45 a 90 minutos',
-  },
-  {
-    id: 'ninos', nombre: 'Odontopediatría', img: 'r-yenny-nino',
-    alt: 'La Dra. Yenny revisando los dientes de un niño',
-    desc: 'Atención para los más pequeños con paciencia y sin apuros, para que sus primeras visitas al dentista sean una buena experiencia.',
-    incluye: ['Control y limpieza', 'Sellantes y flúor', 'Curaciones de dientes de leche'],
-    dur: '30 a 45 minutos',
-  },
-  {
-    id: 'estetica', nombre: 'Carillas y diseño de sonrisa', img: 'estetica',
-    alt: 'Primer plano de una sonrisa cuidada',
-    desc: 'Mejoramos la forma, el tamaño y el color de tus dientes con carillas de resina o porcelana, planificadas según tu rostro.',
-    incluye: ['Diseño de sonrisa', 'Carillas de resina o porcelana', 'Ajustes finales'],
-    dur: 'Según el plan de tratamiento',
-  },
-  {
-    id: 'cirugia', nombre: 'Cirugía y extracciones', img: 'cirugia',
-    alt: 'Odontólogos realizando un procedimiento',
-    desc: 'Extracciones simples y de muelas del juicio con anestesia local, indicaciones claras y control posterior.',
-    incluye: ['Extracciones simples', 'Muelas del juicio', 'Control postoperatorio'],
-    dur: '30 a 60 minutos',
-  },
-];
-
 const CHIPS = [
   'Quiero agendar una evaluación.',
   'Tengo dolor de muela, ¿me pueden atender hoy?',
-  '¿Cuánto cuesta el blanqueamiento?',
-  'Quiero información sobre ortodoncia.',
-  'Quiero información sobre implantes.',
+  '¿Cuánto cuesta el aclaramiento dental?',
+  'Quiero información sobre ortodoncia con brackets.',
+  'Quiero información sobre prótesis dental.',
   'Quiero una cita para mi hijo o hija.',
 ];
 
@@ -105,7 +32,9 @@ $$('[data-tel-txt]').forEach((a) => (a.textContent = `WhatsApp ${NEGOCIO.telefon
 $$('[data-direccion]').forEach((el) => (el.textContent = NEGOCIO.direccion));
 
 const horarioEl = $('[data-horario]');
-[[1, 5, 'Lunes a viernes'], [6, 6, 'Sábado'], [0, 0, 'Domingo']].forEach(([d, , etiqueta]) => {
+// Si el sábado tiene el mismo horario que la semana, se juntan en una sola fila
+const igualSabado = JSON.stringify(NEGOCIO.horario[6]) === JSON.stringify(NEGOCIO.horario[1]);
+(igualSabado ? [[1, 'Lunes a sábado'], [0, 'Domingo']] : [[1, 'Lunes a viernes'], [6, 'Sábado'], [0, 'Domingo']]).forEach(([d, etiqueta]) => {
   const tramos = NEGOCIO.horario[d];
   horarioEl.insertAdjacentHTML('beforeend',
     `<div><dt>${etiqueta}</dt><dd>${tramos ? tramos.map(([a, b]) => `${fmtHora(a)} – ${fmtHora(b)}`).join('<br>') : 'Cerrado'}</dd></div>`);
@@ -261,21 +190,25 @@ function resumenTurnos(doc) {
     return `<li><b>${TURNOS[t].nombre}</b> ${rangoDias(dias)} · ${fmtHora(TURNOS[t].desde)} – ${fmtHora(TURNOS[t].hasta)}</li>`;
   }).join('');
 }
-const nombreServ = (id) => SERVICIOS.find((x) => x.id === id)?.nombre || id;
+const nombreServ = nombreServicio;
 const equipoEl = $('[data-equipo]');
-if (equipoEl) {
+function pintarEquipo(yaVisto = false) {
   equipoEl.innerHTML = DOCTORES.map((d) => `
-    <article class="doc" data-anim>
+    <article class="doc${yaVisto ? ' visto' : ''}" data-anim>
       <figure class="doc__foto"><img src="${d.foto}" alt="${d.nombre}" width="500" height="625" loading="lazy"></figure>
       <div class="doc__info">
         <p class="doc__cargo">${d.cargo}</p>
         <h3>${d.nombre}</h3>
         <p class="doc__resumen">${d.resumen}</p>
-        <ul class="doc__funciones">${d.funciones.map((f) => `<li>${nombreServ(f)}</li>`).join('')}</ul>
+        <ul class="doc__funciones">${d.funciones.map((f) => `<li>${escHtml(nombreServ(f))}</li>`).join('')}</ul>
         <ul class="doc__turnos">${resumenTurnos(d)}</ul>
         <button class="btn btn--azul doc__btn" type="button" data-reservar-con="${d.id}">Reservar con ${d.cargo.includes('jano') ? 'él' : 'ella'}</button>
       </div>
     </article>`).join('');
+  if (yaVisto) $$('.doc', equipoEl).forEach((el) => [...el.children].forEach((c, i) => c.style.setProperty('--i', i)));
+}
+if (equipoEl) {
+  pintarEquipo();
   equipoEl.addEventListener('click', (e) => {
     const b = e.target.closest('[data-reservar-con]');
     if (!b) return;
@@ -299,9 +232,13 @@ docsEl.innerHTML = DOCTORES.map((d) => `
 
 function pintarServicios() {
   const doc = doctor(cita.doctor);
-  const lista = doc ? SERVICIOS.filter((s) => doc.funciones.includes(s.id)) : SERVICIOS;
+  // Del catálogo de la clínica + los servicios propios que el doctor agregó en su panel
+  const lista = doc
+    ? [...SERVICIOS.filter((s) => doc.funciones.includes(s.id)),
+      ...doc.funciones.filter((f) => !SERVICIOS.some((s) => s.id === f)).map((f) => ({ id: f, nombre: f }))]
+    : SERVICIOS;
   selServ.innerHTML = `<option value="">${doc ? `Servicios de ${doc.nombre}…` : 'Elige un servicio…'}</option>` +
-    lista.map((s) => `<option value="${s.id}">${s.nombre}</option>`).join('');
+    lista.map((s) => `<option value="${escHtml(s.id)}">${escHtml(s.nombre)}</option>`).join('');
   selServ.value = lista.some((s) => s.id === cita.servicio) ? cita.servicio : '';
 }
 function pintarDoctores() {
@@ -407,6 +344,13 @@ function alCambiarAgenda() { limpiarSiNoSirve(); marcarDias(); pintarHoras(); pi
 window.rangoReserva = [diasDisp[0], diasDisp.at(-1)];
 window.doctoresIds = DOCTORES.map((d) => d.id);
 window.ponerOcupado = (todo) => { OCUPADO = todo; alCambiarAgenda(); };
+// Servicios que cada doctor marcó en su panel
+window.ponerServicios = (mapa) => {
+  aplicarServicios(mapa);
+  if (equipoEl) pintarEquipo(true);
+  if (cita.doctor && cita.servicio && !doctor(cita.doctor).funciones.includes(cita.servicio)) cita.servicio = '';
+  repintar();
+};
 window.ponerExtras = (lista) => { EXTRAS = lista; alCambiarAgenda(); };
 
 function pintarHoras() {
@@ -470,10 +414,9 @@ function fechaLarga(d) {
   return `${DIAS[d.getDay()][0].toUpperCase()}${DIAS[d.getDay()].slice(1)} ${d.getDate()} de ${MESES[d.getMonth()]}`;
 }
 function pintarTarjeta() {
-  const s = SERVICIOS.find((x) => x.id === cita.servicio);
   pon('[data-t-nombre]', cita.nombre);
   pon('[data-t-doctor]', doctor(cita.doctor)?.nombre);
-  pon('[data-t-servicio]', s ? s.nombre : '');
+  pon('[data-t-servicio]', cita.servicio ? nombreServ(cita.servicio) : '');
   pon('[data-t-dia]', cita.dia ? fechaLarga(cita.dia) : '');
   pon('[data-t-hora]', cita.hora != null ? fmtHora(cita.hora) : '');
   tarjeta.classList.remove('enviada');
@@ -495,11 +438,10 @@ function enviar() {
     tarjeta.classList.remove('sacude'); void tarjeta.offsetWidth; tarjeta.classList.add('sacude');
     return;
   }
-  const s = SERVICIOS.find((x) => x.id === cita.servicio);
   const msg = [
     'Hola, quiero reservar una cita:',
     `• Odontólogo: ${doctor(cita.doctor).nombre}`,
-    `• Servicio: ${s.nombre}`,
+    `• Servicio: ${nombreServ(cita.servicio)}`,
     `• Día: ${fechaLarga(cita.dia)}`,
     `• Hora: ${fmtHora(cita.hora)} (turno ${TURNOS[turnoDeHora(cita.hora)].nombre.toLowerCase()})`,
     `• Nombre: ${cita.nombre}`,

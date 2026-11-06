@@ -62,6 +62,22 @@
 
     <section class="bandeja" data-bandeja aria-live="polite" hidden></section>
 
+    <details class="servicios" data-servicios hidden>
+      <summary>
+        <span><b>Mis servicios</b> <small data-serv-resumen></small></span>
+        <span class="servicios__ver">Editar</span>
+      </summary>
+      <div class="servicios__cuerpo">
+        <p class="ayuda">Marca los servicios que realizas. En la web solo podrán reservarte para estos y salen en tu tarjeta del equipo.</p>
+        <div class="serv-lista" data-serv-lista></div>
+        <form class="serv-otro" data-serv-otro>
+          <label class="sr" for="serv-nuevo">Agregar otro servicio</label>
+          <input id="serv-nuevo" name="nombre" maxlength="60" autocomplete="off" placeholder="Agregar otro servicio">
+          <button class="boton" type="submit">Agregar</button>
+        </form>
+      </div>
+    </details>
+
     <section class="general" data-general hidden>
       <div class="general__cab">
         <div><p class="dia__sub"><span class="en-vivo"></span>En vivo</p><h2 data-gen-titulo></h2></div>

@@ -1,7 +1,7 @@
 // ===== Panel de cada odontólogo: su agenda, sus turnos y solicitudes para unirse =====
 import {
   app, configurado, escucharTodos, escucharNotas, escucharSolicitudes,
-  guardarOcupado, guardarNota, crearSolicitud, cambiarSolicitud, leerPerfil,
+  guardarOcupado, guardarNota, crearSolicitud, cambiarSolicitud, leerPerfil, escucharServicios, guardarServicios,
 } from './agenda.js';
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence,
@@ -73,11 +73,53 @@ const api = demo
     nota: async (id, f, h, t) => { (NOTAS[f] ||= {})[h] = t; },
     crear: async (s) => { SOLIC = [...SOLIC, { id: 'demo' + ++idDemo, ...s }]; pintarTodo(); },
     cambiar: async (id, e) => { SOLIC = SOLIC.map((s) => (s.id === id ? { ...s, estado: e } : s)); pintarTodo(); },
+    servicios: async () => {},
   }
   : {
     ocupado: guardarOcupado, nota: guardarNota,
-    crear: crearSolicitud, cambiar: cambiarSolicitud,
+    crear: crearSolicitud, cambiar: cambiarSolicitud, servicios: guardarServicios,
   };
+
+// ----- Mis servicios: cada doctor marca los que realiza y puede agregar otros -----
+const servEl = $('[data-servicios]');
+const misServicios = () => doctor(YO)?.funciones || [];
+const esDelCatalogo = (x) => SERVICIOS.some((s) => s.id === x);
+function pintarMisServicios() {
+  if (!doctor(YO)) { servEl.hidden = true; return; }
+  servEl.hidden = false;
+  const mios = misServicios();
+  $('[data-serv-resumen]').textContent = `· ${mios.length} servicio${mios.length === 1 ? '' : 's'}`;
+  $('[data-serv-lista]').innerHTML = SERVICIOS.map((x) => `
+    <label class="serv"><input type="checkbox" value="${x.id}"${mios.includes(x.id) ? ' checked' : ''}><span>${x.nombre}</span></label>`).join('')
+    + mios.filter((x) => !esDelCatalogo(x)).map((x) => `
+    <span class="serv serv--otro"><span>${escHtml(x)}</span><button type="button" data-quitar="${escHtml(x)}" aria-label="Quitar ${escHtml(x)}">×</button></span>`).join('');
+}
+function guardarMisServicios(lista) {
+  // Primero los del catálogo (en su orden), luego los propios
+  const orden = [...SERVICIOS.map((x) => x.id).filter((id) => lista.includes(id)), ...lista.filter((x) => !esDelCatalogo(x))];
+  doctor(YO).funciones = orden;
+  pintarMisServicios();
+  guardar(api.servicios(YO, orden));
+}
+servEl.addEventListener('change', (e) => {
+  if (!e.target.matches('input[type="checkbox"]')) return;
+  const mios = misServicios().filter((x) => x !== e.target.value);
+  if (e.target.checked) mios.push(e.target.value);
+  guardarMisServicios(mios);
+});
+servEl.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-quitar]');
+  if (b) guardarMisServicios(misServicios().filter((x) => x !== b.dataset.quitar));
+});
+$('[data-serv-otro]').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const t = e.target.nombre.value.trim().replace(/\s+/g, ' ');
+  if (!t) return;
+  const igual = SERVICIOS.find((x) => x.nombre.toLowerCase() === t.toLowerCase());
+  const valor = igual ? igual.id : t;
+  if (!misServicios().includes(valor)) guardarMisServicios([...misServicios(), valor]);
+  e.target.reset();
+});
 
 function cambiarOcupado(d, cambio) {
   const f = claveFecha(d);
@@ -342,6 +384,7 @@ let SOPORTE = false;
 function ponerDoctor(id) {
   YO = id;
   selDoc.value = id;
+  pintarMisServicios();
   const general = id === 'todos';
   generalEl.hidden = !general;
   cuerpoEl.hidden = general;
@@ -387,6 +430,7 @@ function abrirPanel(perfil) {
     apagar = [
       escucharTodos(DOCTORES.map((d) => d.id), hoy, hasta, (m) => { TODOS = m; pintarTodo(); }),
       escucharSolicitudes(hoy, hasta, (l) => { SOLIC = l; pintarTodo(); }),
+      escucharServicios(DOCTORES.map((d) => d.id), (m) => { aplicarServicios(m); pintarMisServicios(); }),
     ];
   }
   ponerDoctor(perfil.doctor || 'todos');
@@ -406,10 +450,10 @@ if (demo) {
   const f = (i) => claveFecha(dias[i]);
   TODOS = {
     d1: { [f(0)]: { completo: false, horas: [10, 10.5, 12] }, [f(3)]: { completo: true, horas: [] } },
-    d2: { [f(0)]: { completo: false, horas: [14, 15, 15.5] }, [f(1)]: { completo: false, horas: [14.5, 16] } },
+    d2: { [f(0)]: { completo: false, horas: [15, 16, 16.5] }, [f(1)]: { completo: false, horas: [15.5, 17] } },
     d3: { [f(0)]: { completo: false, horas: [19, 20] }, [f(1)]: { completo: false, horas: [18, 18.5] } },
   };
-  NOTAS = { [f(0)]: { '10': 'Ana Torres · limpieza', '12': 'Luis Rojas · control de brackets' } };
+  NOTAS = { [f(0)]: { '10': 'Ana Torres · limpieza', '12': 'Luis Rojas · restauración' } };
   SOLIC = [
     { id: 's1', de: 'd3', para: 'd2', fecha: f(1), turno: 'tarde', estado: 'aceptada' },
     { id: 's2', de: 'd2', para: 'd1', fecha: f(2), turno: 'manana', estado: 'pendiente' },

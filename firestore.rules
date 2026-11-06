@@ -13,6 +13,15 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.token.email.lower() == correo;
     }
 
+    // Servicios que realiza cada doctor: la web los lee, solo ese doctor los cambia
+    match /agenda/{doctor} {
+      allow read: if true;
+      allow create, update: if doctor in ['d1', 'd2', 'd3'] && esDe(doctor)
+        && request.resource.data.keys().hasOnly(['servicios', 'actualizado'])
+        && request.resource.data.servicios is list
+        && request.resource.data.servicios.size() <= 40;
+    }
+
     // Horas ocupadas de cada doctor: la web las lee, solo ese doctor las cambia
     match /agenda/{doctor}/ocupado/{fecha} {
       allow read: if true;

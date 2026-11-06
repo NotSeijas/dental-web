@@ -221,3 +221,23 @@ button, input { font: inherit; color: inherit; }
 .gen-estado--aceptada, .gen-estado--abierto { background: var(--hoja-clara); color: #3f5c0b; }
 .gen-estado--rechazada { background: var(--rojo-claro); color: #a3264a; }
 @media (max-width: 960px) { .gen-cols { grid-template-columns: 1fr; } }
+
+/* ===== Mis servicios ===== */
+.servicios { max-width: 1200px; margin: 16px auto 0; padding: 0 clamp(16px, 3vw, 32px); }
+.servicios summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; background: #fff; border: 1px solid var(--linea); border-radius: 16px; cursor: pointer; list-style: none; }
+.servicios summary::-webkit-details-marker { display: none; }
+.servicios summary b { font-family: var(--display); color: var(--azul-hondo); }
+.servicios summary small { color: var(--tinta-2); font-size: 0.88rem; }
+.servicios__ver { font-weight: 600; font-size: 0.9rem; color: var(--azul); }
+.servicios[open] .servicios__ver { color: var(--tinta-2); }
+.servicios[open] summary { border-radius: 16px 16px 0 0; border-bottom-color: transparent; }
+.servicios__cuerpo { display: grid; gap: 12px; padding: 4px 18px 18px; background: #fff; border: 1px solid var(--linea); border-top: 0; border-radius: 0 0 16px 16px; }
+.serv-lista { display: flex; flex-wrap: wrap; gap: 8px; }
+.serv { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border: 1.5px solid var(--linea); border-radius: 999px; background: #fff; font-size: 0.9rem; cursor: pointer; }
+.serv input { width: 16px; height: 16px; margin: 0; accent-color: var(--azul); }
+.serv:has(input:checked) { background: var(--hoja-clara); border-color: #cfe39b; }
+.serv--otro { background: var(--hoja-clara); border-color: #cfe39b; cursor: default; }
+.serv--otro button { width: 22px; height: 22px; border: 0; border-radius: 50%; background: #fff; color: var(--tinta-2); font-size: 1rem; line-height: 1; cursor: pointer; }
+.serv--otro button:hover { color: var(--rojo); }
+.serv-otro { display: flex; gap: 8px; max-width: 460px; }
+.serv-otro input { flex: 1; min-width: 0; padding: 10px 12px; border: 1.5px solid var(--linea); border-radius: 12px; font: inherit; }

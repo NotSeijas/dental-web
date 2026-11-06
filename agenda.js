@@ -28,6 +28,7 @@ export const claveFecha = (d) =>
 // agenda/{doctor}/notas/{fecha}   = { '9': 'Ana Pérez · limpieza', … }  → privado, solo ese doctor
 // solicitudes/{id}                 = { de, para, fecha, turno, estado }  → unirse al turno de otro doctor
 // medicos/{correo}                 = { doctor: 'd1' } o { admin: true }  → qué doctor es cada cuenta
+// agenda/{doctor}                  = { servicios: ['limpieza', …] }     → público, solo ese doctor lo cambia
 const rango = (col, desde, hasta) =>
   query(col, where(documentId(), '>=', claveFecha(desde)), where(documentId(), '<=', claveFecha(hasta)));
 
@@ -89,4 +90,19 @@ export function cambiarSolicitud(id, estado) {
 export async function leerPerfil(correo) {
   const s = await getDoc(doc(db, 'medicos', correo.toLowerCase()));
   return s.exists() ? s.data() : null;
+}
+
+// ----- Servicios que realiza cada doctor (los edita desde su panel) -----
+export function escucharServicios(ids, cb) {
+  if (!db) return () => {};
+  const todo = {};
+  const apagar = ids.map((id) => onSnapshot(doc(db, 'agenda', id), (s) => {
+    if (s.exists() && Array.isArray(s.data().servicios)) todo[id] = s.data().servicios; else delete todo[id];
+    cb({ ...todo });
+  }, (err) => console.warn('Servicios no disponibles:', err.message)));
+  return () => apagar.forEach((f) => f());
+}
+
+export function guardarServicios(docId, servicios) {
+  return setDoc(doc(db, 'agenda', docId), { servicios, actualizado: serverTimestamp() });
 }
