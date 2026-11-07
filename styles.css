@@ -865,3 +865,9 @@ body.cargando .gotita { opacity: 0; }
 .wa-elige__doc img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: 50% 20%; }
 .wa-elige__doc b { display: block; font-size: 0.98rem; }
 .wa-elige__doc small { color: #178a6c; font-weight: 600; }
+
+/* Botón para hablar con el doctor tras enviar la solicitud */
+.tarjeta__dr { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 8px; min-height: 46px; padding: 0 18px; border-radius: 999px; background: #25d366; color: #fff; font-weight: 700; font-size: 0.98rem; text-decoration: none; }
+.tarjeta__dr:hover { background: #1fb457; }
+.tarjeta__dr .ico { width: 20px; height: 20px; fill: currentColor; stroke: none; }
+.tarjeta__dr[hidden] { display: none; }

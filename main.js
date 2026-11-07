@@ -480,6 +480,10 @@ function bloquear(porNumero) {
     ? `El número ${cita.celular} ya tiene una solicitud enviada en las últimas ${LIMITE_HORAS} horas. El odontólogo te escribirá por WhatsApp para confirmarla.`
     : `${s.doctor} revisará tu cita del ${s.cuando} y te escribirá al ${s.celular} para confirmarla. Podrás pedir otra en ${horas} ${horas === 1 ? 'hora' : 'horas'}.`;
   $('[data-otra]').hidden = !!porNumero;
+  // Solo si su solicitud sí se envió: botón para hablar con su doctor sobre esa cita
+  const dr = $('[data-ya-dr]'), docId = s?.docId || DOCTORES.find((d) => d.nombre === s?.doctor)?.id;
+  dr.hidden = !!porNumero || !s?.msgDr || !docId;
+  if (!dr.hidden) dr.href = waLink(s.msgDr, docId);
   $('[data-ya-wa]').href = waLink(`Hola, ya envié una solicitud de cita a nombre de ${porNumero ? cita.nombre : s.nombre} y quisiera cambiarla.`, porNumero ? cita.doctor : (s?.docId || DOCTORES.find((d) => d.nombre === s?.doctor)?.id || cita.doctor || 'd2'));
   $('[data-ya]').hidden = false;
   $('[data-nota]').hidden = true;
@@ -525,10 +529,11 @@ async function enviar() {
     });
     tarjeta.classList.add('enviada');
     $('[data-ok-txt]').textContent = `Le llegó a ${doctor(cita.doctor).nombre}. Cuando la apruebe te escribiremos al ${cita.celular} para confirmar tu cita.`;
-    $('[data-ok-wa]').href = waLink(msg, cita.doctor);
+    const msgDr = mensajeDr();
+    $('[data-ok-dr]').href = waLink(msgDr, cita.doctor);
     $('[data-ok]').hidden = false;
     $('[data-nota]').hidden = true;
-    recordarEnvio({ docId: cita.doctor, doctor: doctor(cita.doctor).nombre, cuando: `${fechaLarga(cita.dia).toLowerCase()} a las ${fmtHora(cita.hora)}`, celular: cita.celular, nombre: cita.nombre });
+    recordarEnvio({ msgDr, docId: cita.doctor, doctor: doctor(cita.doctor).nombre, cuando: `${fechaLarga(cita.dia).toLowerCase()} a las ${fmtHora(cita.hora)}`, celular: cita.celular, nombre: cita.nombre });
     tarjeta.classList.add('bloqueada');
   } catch (e2) {
     console.error(e2);
@@ -540,6 +545,18 @@ async function enviar() {
     err.innerHTML = `No se pudo enviar tu solicitud. Revisa tu internet o <a href="${waLink(msg, cita.doctor)}" target="_blank" rel="noopener">envíala por WhatsApp</a>.`;
   }
   btn.disabled = false; btnTxt.textContent = 'Enviar solicitud';
+}
+// Mensaje al doctor sobre la cita que el paciente acaba de enviar
+function mensajeDr() {
+  return [
+    `Hola ${doctor(cita.doctor).corto}, soy ${cita.nombre}. Acabo de enviarle mi solicitud de cita desde la web:`,
+    `• Servicio: ${nombreServ(cita.servicio)}`,
+    `• Día: ${fechaLarga(cita.dia)}`,
+    `• Hora: ${fmtHora(cita.hora)}`,
+    cita.comentario ? `• Comentario: ${cita.comentario}` : null,
+    '',
+    '¿Me la podría confirmar? Gracias.',
+  ].filter((x) => x !== null).join('\n');
 }
 function mensajeWa() {
   return [
