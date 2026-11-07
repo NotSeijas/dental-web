@@ -2,7 +2,7 @@
 import {
   app, configurado, escucharTodos, escucharNotas, escucharSolicitudes,
   guardarOcupado, guardarNota, crearSolicitud, cambiarSolicitud, leerPerfil, escucharServicios, guardarServicios,
-  escucharCitas, responderCita,
+  escucharCitas, responderCita, liberarCelular,
 } from './agenda.js';
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence,
@@ -77,11 +77,11 @@ const api = demo
     crear: async (s) => { SOLIC = [...SOLIC, { id: 'demo' + ++idDemo, ...s }]; pintarTodo(); },
     cambiar: async (id, e) => { SOLIC = SOLIC.map((s) => (s.id === id ? { ...s, estado: e } : s)); pintarTodo(); },
     servicios: async () => {},
-    responderCita: async () => {},
+    responderCita: async () => {}, liberarCelular: async () => {},
   }
   : {
     ocupado: guardarOcupado, nota: guardarNota,
-    crear: crearSolicitud, cambiar: cambiarSolicitud, servicios: guardarServicios, responderCita,
+    crear: crearSolicitud, cambiar: cambiarSolicitud, servicios: guardarServicios, responderCita, liberarCelular,
   };
 
 // ----- Citas que piden los pacientes: el doctor las aprueba o rechaza -----
@@ -141,7 +141,11 @@ citasEl.addEventListener('click', (e) => {
   pintarCitas();
   guardar((async () => {
     await api.responderCita(c.id, b.dataset.cita);
-    if (!ok) return;
+    if (!ok) {
+      // Rechazada: el paciente puede volver a pedir cita con su número sin esperar 24 horas
+      await api.liberarCelular(c.celular).catch((er) => console.warn('No se liberó el número:', er.message));
+      return;
+    }
     // Al aprobar, esa hora queda ocupada y con la nota del paciente
     const e2 = ocup(c.doctor, d);
     if (!e2.completo && !e2.horas.includes(c.hora)) {

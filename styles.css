@@ -844,5 +844,6 @@ body.cargando .gotita { opacity: 0; }
 .tarjeta__ya { margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: #fff4d6; color: #6b4600; font-size: 0.9rem; }
 .tarjeta__ya p { margin: 0 0 6px; }
 .tarjeta.bloqueada .tarjeta__enviar { display: none; }
+.tarjeta__otra { display: block; margin-top: 8px; padding: 0; border: 0; background: none; color: var(--azul-fuerte); font-weight: 600; font-size: 0.86rem; text-decoration: underline; cursor: pointer; text-align: left; }
 .tarjeta__wa { color: var(--azul-fuerte); font-weight: 600; font-size: 0.86rem; }
 .tarjeta__enviar:disabled { opacity: 0.7; cursor: wait; }

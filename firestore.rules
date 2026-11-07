@@ -66,6 +66,9 @@ service cloud.firestore {
     match /limite/{celular} {
       allow create: if celular.matches('9[0-9]{8}') && marcaValida(celular);
       allow update: if request.time > resource.data.ultima + duration.value(24, 'h') && marcaValida(celular);
+      // Si el doctor rechaza esa cita, el número queda libre al instante
+      allow delete: if esDe(get(/databases/$(database)/documents/citas/$(resource.data.cita)).data.doctor)
+        && get(/databases/$(database)/documents/citas/$(resource.data.cita)).data.estado == 'rechazada';
     }
 
     // Pedir unirse al turno de otro doctor

@@ -439,6 +439,14 @@ function solicitudReciente() {
     return s && Date.now() - s.t < LIMITE_HORAS * 3600e3 ? s : null;
   } catch { return null; }
 }
+// Si el doctor rechazó la solicitud, el número ya quedó libre en Firebase: se deja intentar de nuevo.
+// Si todavía está pendiente, Firebase la vuelve a rechazar y sale el aviso por número.
+document.querySelector('[data-otra]')?.addEventListener('click', () => {
+  try { localStorage.removeItem(CLAVE_ENVIO); } catch {}
+  $('[data-ya]').hidden = true;
+  $('[data-nota]').hidden = false;
+  tarjeta.classList.remove('bloqueada', 'enviada');
+});
 function recordarEnvio(info) {
   try { localStorage.setItem(CLAVE_ENVIO, JSON.stringify({ t: Date.now(), ...info })); } catch {}
 }
@@ -448,6 +456,7 @@ function bloquear(porNumero) {
   $('[data-ya-txt]').textContent = porNumero
     ? `El número ${cita.celular} ya tiene una solicitud enviada en las últimas ${LIMITE_HORAS} horas. El odontólogo te escribirá por WhatsApp para confirmarla.`
     : `${s.doctor} revisará tu cita del ${s.cuando} y te escribirá al ${s.celular} para confirmarla. Podrás pedir otra en ${horas} ${horas === 1 ? 'hora' : 'horas'}.`;
+  $('[data-otra]').hidden = !!porNumero;
   $('[data-ya-wa]').href = waLink(`Hola, ya envié una solicitud de cita a nombre de ${porNumero ? cita.nombre : s.nombre} y quisiera cambiarla.`);
   $('[data-ya]').hidden = false;
   $('[data-nota]').hidden = true;

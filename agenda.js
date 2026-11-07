@@ -134,3 +134,9 @@ export function escucharCitas(docId, cb) {
 export function responderCita(id, estado) {
   return updateDoc(doc(db, 'citas', id), { estado, respondida: serverTimestamp() });
 }
+
+// Al rechazar una cita se libera el número del paciente para que pueda pedir otra de inmediato.
+// Las reglas solo lo permiten si la marca apunta a esa cita, ya rechazada, y la borra su doctor.
+export function liberarCelular(celular) {
+  return deleteDoc(doc(db, 'limite', celular));
+}
