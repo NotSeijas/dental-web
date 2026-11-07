@@ -271,3 +271,48 @@ button, input { font: inherit; color: inherit; }
   .cita__acciones { flex-direction: row; }
   .cita__acciones .boton { flex: 1; }
 }
+
+/* ===== Pestañas por turno y filas compactas ===== */
+.turnos { display: block; margin-top: 16px; }
+.tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 6px; padding: 5px; border-radius: 18px; background: var(--fondo); }
+.tab {
+  display: grid; justify-items: center; gap: 2px; padding: 10px 6px 9px; border: 0; border-radius: 14px; background: transparent;
+  cursor: pointer; color: var(--tinta-2); font: inherit; transition: background-color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+.tab b { font-size: 1rem; color: var(--tinta); }
+.tab small { font-size: 0.74rem; white-space: nowrap; }
+.tab__chip { margin-top: 4px; padding: 2px 9px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; background: #e7edf2; color: var(--tinta-2); white-space: nowrap; }
+.tab--mio .tab__chip { background: var(--hoja-clara); color: #3f5c0b; }
+.tab--espera .tab__chip { background: #e3eefa; color: var(--azul); }
+.tab[aria-selected="true"] { background: #fff; box-shadow: 0 2px 12px rgba(16, 52, 84, 0.12); }
+@media (hover: hover) { .tab:not([aria-selected="true"]):hover { background: rgba(255, 255, 255, 0.6); } }
+.turno-info { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 10px 14px; border-radius: 14px; font-size: 0.88rem; color: var(--tinta-2); background: var(--fondo); }
+.turno-info p { margin: 0; }
+.turno-info--mio { background: var(--hoja-clara); color: #3f5c0b; font-weight: 600; }
+.turno-info--libre, .turno-info--espera { border: 1.5px dashed var(--linea); background: #fff; }
+.turno-info__accion .enlace { padding: 0; }
+.grupo { margin-top: 12px; }
+.grupo__juntos { margin: 0 0 8px; font-size: 0.84rem; font-weight: 500; color: var(--tinta-2); }
+.grupo__juntos b { color: #3f5c0b; }
+.fila, .fila:has(.otros) { grid-template-columns: 170px 1fr auto; }
+.otros { display: flex; gap: 4px; }
+.otro {
+  display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border-radius: 50%;
+  font-size: 0.78rem; font-weight: 700; background: var(--hoja-clara); color: #3f5c0b;
+}
+.otro--ocupado { background: var(--rojo-claro); color: #a3264a; text-decoration: line-through; }
+@media (max-width: 860px) {
+  .dia { padding: 14px; border-radius: 18px; }
+  .fila, .fila:has(.otros) { grid-template-columns: 104px 1fr auto; gap: 8px; padding: 3px 0; border-bottom: 0; }
+  .hora { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; min-height: 50px; padding: 4px 10px; }
+  .hora__t { font-size: 0.95rem; }
+  .hora__estado { font-size: 0.72rem; }
+  .nota { min-height: 50px; font-size: 0.88rem; padding: 0 10px; }
+  .fila.pasada:not(.ocupada) .nota { display: block; visibility: hidden; }
+  .otro { width: 24px; height: 24px; font-size: 0.72rem; }
+  .ayuda { font-size: 0.85rem; }
+  .tab small { font-size: 0.68rem; }
+}
+.cuerpo > * { min-width: 0; }
+@media (max-width: 860px) { .cuerpo { grid-template-columns: minmax(0, 1fr); } }
+.tab--paso .tab__chip { background: #e7edf2; color: var(--tinta-2); }

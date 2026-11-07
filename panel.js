@@ -268,10 +268,30 @@ listaEl.addEventListener('click', (e) => {
 
 // ----- Turnos del día: unirse al turno de otro doctor -----
 const turnosEl = $('[data-turnos]');
+// Pestañas Mañana / Tarde / Noche: se ve un turno a la vez
+let TAB = null, tabDia = '';
+const horaCorta = (h) => `${h % 12 || 12}${h % 1 ? ':30' : ''} ${h < 12 ? 'a. m.' : 'p. m.'}`;
+const primerNombre = (id) => (doctor(id)?.corto || '').replace(/^Dr[a]?\.\s*/, '');
+function turnoInicial(ts) {
+  const mios = ts.filter((t) => misTurnos(sel).includes(t));
+  if (sel.getTime() === hoy.getTime()) {
+    const ahora = new Date().getHours() + new Date().getMinutes() / 60;
+    const sigue = mios.find((t) => TURNOS[t].hasta > ahora);
+    if (sigue) return sigue;
+  }
+  return mios[0] || ts[0];
+}
+function libresDeTurno(t) {
+  const e = estado(sel);
+  if (e.completo) return 0;
+  return horasDeTurno(t).filter((h) => !e.horas.includes(h) && !pasada(sel, h) && !unidadOcupadaPor(YO, sel, h)).length;
+}
 function pintarTurnos() {
   const f = claveFecha(sel);
   const pasado = sel.getTime() < hoy.getTime();
-  turnosEl.innerHTML = Object.keys(TURNOS).filter((t) => horasDeTurno(t).length).map((t) => {
+  const ts = Object.keys(TURNOS).filter((t) => horasDeTurno(t).length);
+  if (tabDia !== f || !ts.includes(TAB)) { tabDia = f; TAB = turnoInicial(ts); }
+  const datos = ts.map((t) => {
     const fijos = DOCTORES.filter((x) => (x.turnos[sel.getDay()] || []).includes(t)).map((x) => x.id);
     const en = doctoresEnTurno(t, sel, SOLIC);
     const otros = en.filter((x) => x !== YO);
@@ -297,14 +317,26 @@ function pintarTurnos() {
       estadoTxt = 'Nadie atiende este turno';
       if (!pasado) accion = `<button class="boton boton--chico" type="button" data-tomar="${t}">Tomar turno</button>`;
     }
-    return `<div class="turno ${clase}">
-      <p class="turno__nom">${TURNOS[t].nombre} <small>${horario}</small></p>
-      <p class="turno__estado">${estadoTxt}</p>
-      ${accion ? `<div class="turno__accion">${accion}</div>` : ''}
+    const libres = clase === 'mio' ? libresDeTurno(t) : 0;
+    const termino = horasDeTurno(t).every((h) => pasado || pasada(sel, h));
+    if (termino && clase === 'mio') clase = 'mio tab--paso';
+    const chip = termino ? 'Terminó' : clase === 'mio' ? (libres ? `${libres} libre${libres === 1 ? '' : 's'}` : 'Lleno')
+      : clase === 'espera' ? 'Pendiente' : clase === 'libre' ? 'Sin doctor' : 'Otro doctor';
+    return { t, clase, estadoTxt, accion, chip, horario };
+  });
+  const act = datos.find((d) => d.t === TAB);
+  turnosEl.innerHTML = `<div class="tabs" role="tablist" aria-label="Turnos del día">${datos.map((d) => `
+    <button type="button" role="tab" class="tab tab--${(d.clase || 'otro').replace(' tab--paso', '')}${d.clase.includes('tab--paso') ? ' tab--paso' : ''}" aria-selected="${d.t === TAB}" data-tab="${d.t}">
+      <b>${TURNOS[d.t].nombre}</b><small>${horaCorta(TURNOS[d.t].desde)} – ${horaCorta(TURNOS[d.t].hasta)}</small>
+      <span class="tab__chip">${d.chip}</span>
+    </button>`).join('')}</div>
+    <div class="turno-info turno-info--${(act.clase || 'otro').replace(' tab--paso', '')}">
+      <p>${act.estadoTxt}</p>${act.accion ? `<div class="turno-info__accion">${act.accion}</div>` : ''}
     </div>`;
-  }).join('');
 }
 turnosEl.addEventListener('click', (e) => {
+  const tab = e.target.closest('[data-tab]');
+  if (tab) { TAB = tab.dataset.tab; pintarDia(); return; }
   const u = e.target.closest('[data-unirme]');
   const t = e.target.closest('[data-tomar]');
   const fecha = claveFecha(sel);
@@ -339,14 +371,14 @@ function pintarDia(nuevo = false) {
     firma = nuevaFirma;
     horarioEl.innerHTML = turnos.map((t) => {
       const otros = doctoresEnTurno(t, sel, SOLIC).filter((x) => x !== YO);
-      return `<div class="grupo"><p class="grupo__titulo">Turno ${TURNOS[t].nombre.toLowerCase()}${otros.length ? ` · compartido con ${juntar(otros.map((o) => conConf(o, t, nombre(o))))}` : ''}</p>
+      return `<div class="grupo" data-t="${t}">
         ${otros.length ? '<p class="grupo__juntos" data-juntos></p>' : ''}
         ${horasDeTurno(t).map((h) => `<div class="fila" data-h="${h}">
           <button type="button" class="hora" data-toggle aria-pressed="false">
             <span class="hora__t">${fmtHora(h)}</span><span class="hora__estado"></span>
           </button>
-          <input class="nota" type="text" maxlength="80" placeholder="Paciente o tratamiento (opcional)" aria-label="Nota de las ${fmtHora(h)}">
-          ${otros.length ? `<span class="otros">${otros.map((o) => `<span data-otro="${o}"></span>`).join('')}</span>` : ''}
+          <input class="nota" type="text" maxlength="80" placeholder="Agregar nota" aria-label="Nota de las ${fmtHora(h)}">
+          ${otros.length ? `<span class="otros">${otros.map((o) => `<span data-otro="${o}" role="img"></span>`).join('')}</span>` : ''}
         </div>`).join('')}
       </div>`;
     }).join('');
@@ -364,15 +396,17 @@ function pintarDia(nuevo = false) {
     fila.classList.toggle('ocupada', oc);
     fila.classList.toggle('unidad', !!usa);
     fila.classList.toggle('pasada', paso);
-    $('.hora__estado', b).textContent = paso ? 'Pasó' : oc ? 'Ocupada' : usa ? `Unidad: ${doctor(usa).corto}` : 'Libre';
+    $('.hora__estado', b).textContent = paso ? 'Pasó' : oc ? 'Ocupada' : usa ? `Unidad · ${primerNombre(usa)}` : 'Libre';
     const nota = $('.nota', fila);
     nota.disabled = !!usa;
-    nota.placeholder = usa ? `La unidad la usa ${doctor(usa).corto}` : 'Paciente o tratamiento (opcional)';
+    nota.placeholder = usa ? `La unidad la usa ${doctor(usa).corto}` : 'Agregar nota';
     if (document.activeElement !== nota) nota.value = notas[String(h)] || '';
     $$('[data-otro]', fila).forEach((s) => {
       const o = estaOcupado(s.dataset.otro, sel, h);
       s.className = o ? 'otro otro--ocupado' : 'otro';
-      s.textContent = `${doctor(s.dataset.otro).corto}: ${o ? 'ocupada' : 'libre'}`;
+      s.textContent = primerNombre(s.dataset.otro).charAt(0);
+      s.title = `${doctor(s.dataset.otro).corto}: ${o ? 'ocupada' : 'libre'}`;
+      s.setAttribute('aria-label', s.title);
     });
   });
   // Turno compartido: cuántas horas quedan libres entre todos
@@ -384,8 +418,11 @@ function pintarDia(nuevo = false) {
     const libresJuntos = hs.reduce((n, h) => n + new Set(en
       .filter((id) => !estaOcupado(id, sel, h) && !unidadOcupadaPor(id, sel, h))
       .map((id) => doctor(id).unidad || id)).size, 0);
-    p.textContent = `Entre los ${en.length} hay ${libresJuntos} horas libres en este turno.`;
+    p.innerHTML = `Con ${juntar(en.filter((id) => id !== YO).map(primerNombre))} · <b>${libresJuntos}</b> espacios libres entre todos`;
   });
+  // Solo se ve el turno de la pestaña elegida
+  $$('.grupo', horarioEl).forEach((g) => (g.hidden = g.dataset.t !== TAB));
+  horarioEl.hidden = !turnos.includes(TAB);
 }
 horarioEl.addEventListener('click', (e) => {
   const b = e.target.closest('[data-toggle]');
