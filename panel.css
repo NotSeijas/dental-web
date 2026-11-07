@@ -114,6 +114,9 @@ button, input { font: inherit; color: inherit; }
 .hora:disabled { cursor: default; }
 .fila.pasada { opacity: 0.45; }
 .fila.pasada .hora__estado { color: var(--tinta-2); }
+.fila.unidad .hora { background: #f1f1f4; border-style: dashed; cursor: not-allowed; }
+.fila.unidad .hora__estado { color: var(--tinta-2); font-size: 0.85em; }
+.fila.unidad .nota { opacity: 0.6; }
 .nota { min-height: 44px; padding: 0 12px; border: 1.5px solid transparent; border-radius: 12px; background: var(--fondo); font-size: 0.93rem; }
 .nota:focus { outline: none; border-color: var(--azul); background: #fff; }
 .nota::placeholder { color: #93a6b5; }

@@ -11,7 +11,9 @@ const CHIPS = [
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const LIMITE_HORAS = 24, CLAVE_ENVIO = 'yenmar-solicitud';  // una solicitud por paciente cada 24 h
-const waLink = (txt) => `https://wa.me/${NEGOCIO.wa}?text=${encodeURIComponent(txt)}`;
+// Cada mensaje va al WhatsApp del doctor (la clínica no tiene un número general)
+const waLink = (txt, docId) => `https://wa.me/${doctor(docId).wa}?text=${encodeURIComponent(txt)}`;
+const telDe = (docId) => doctor(docId).wa.slice(2).replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -28,8 +30,27 @@ const horaDecimal = (d) => d.getHours() + d.getMinutes() / 60;
 // ===== Datos fijos en la página =====
 $$('[data-nombre]').forEach((el) => (el.textContent = NEGOCIO.nombre));
 $$('[data-anio]').forEach((el) => (el.textContent = new Date().getFullYear()));
-$$('[data-wa]').forEach((a) => (a.href = waLink(a.dataset.wa)));
-$$('[data-tel-txt]').forEach((a) => (a.textContent = `WhatsApp ${NEGOCIO.telefono}`));
+$$('[data-tels]').forEach((el) => (el.innerHTML = DOCTORES.map((d) =>
+  `<small>${d.corto}</small><a href="${waLink('Hola, quisiera hacer una consulta.', d.id)}" target="_blank" rel="noopener">WhatsApp ${telDe(d.id)}</a>`).join('')));
+
+// Botones generales de WhatsApp: primero se elige con qué doctor hablar
+const waElige = $('[data-wa-elige]');
+function elegirWa(txt) {
+  $('[data-wa-docs]', waElige).innerHTML = DOCTORES.map((d) => `<li>
+    <a class="wa-elige__doc" href="${waLink(txt, d.id)}" target="_blank" rel="noopener">
+      <img src="${d.foto}" alt="" width="48" height="48"><span><b>${d.nombre}</b><small>WhatsApp ${telDe(d.id)}</small></span>
+    </a></li>`).join('');
+  if (waElige.showModal) waElige.showModal(); else waElige.setAttribute('open', '');
+}
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-wa]');
+  if (!a) return;
+  e.preventDefault();
+  elegirWa(a.dataset.wa || 'Hola, quisiera hacer una consulta.');
+});
+waElige.addEventListener('click', (e) => {
+  if (e.target === waElige || e.target.closest('[data-wa-cerrar]') || e.target.closest('.wa-elige__doc')) waElige.close();
+});
 $$('[data-direccion]').forEach((el) => (el.textContent = NEGOCIO.direccion));
 
 const horarioEl = $('[data-horario]');
@@ -138,7 +159,7 @@ function mostrar(id, { foco = false } = {}) {
   $('[data-vista-desc]').textContent = s.desc;
   $('[data-vista-incluye]').innerHTML = s.incluye.map((t) => `<li>${t}</li>`).join('');
   $('[data-vista-dur]').textContent = s.dur;
-  $('[data-vista-wa]').href = waLink(`Hola, quisiera información sobre ${s.nombre.toLowerCase()}.`);
+  $('[data-vista-wa]').dataset.wa = `Hola, quisiera información sobre ${s.nombre.toLowerCase()}.`;
   const info = $('.panel__info', vista);
   info.classList.remove('cambia'); void info.offsetWidth; info.classList.add('cambia');
 
@@ -310,9 +331,11 @@ function slotsDe(d) {
   return horasDeDoctor(cita.doctor, d, EXTRAS).filter((h) => h >= limite);
 }
 const atiende = (d) => slotsDe(d).length > 0;
+// Una hora está ocupada si el doctor la marcó (o cerró el día) o si otro doctor de su misma unidad la tiene ocupada
 const ocupada = (d, h) => {
-  const o = OCUPADO[cita.doctor]?.[claveFecha(d)];
-  return !!o && (o.completo || o.horas.includes(h));
+  const f = claveFecha(d), o = OCUPADO[cita.doctor]?.[f];
+  if (o && (o.completo || o.horas.includes(h))) return true;
+  return companerosDeUnidad(cita.doctor).some((id) => OCUPADO[id]?.[f]?.horas?.includes(h));
 };
 const diaLleno = (d) => slotsDe(d).every((h) => ocupada(d, h));
 function limpiarSiNoSirve() {
@@ -457,7 +480,7 @@ function bloquear(porNumero) {
     ? `El número ${cita.celular} ya tiene una solicitud enviada en las últimas ${LIMITE_HORAS} horas. El odontólogo te escribirá por WhatsApp para confirmarla.`
     : `${s.doctor} revisará tu cita del ${s.cuando} y te escribirá al ${s.celular} para confirmarla. Podrás pedir otra en ${horas} ${horas === 1 ? 'hora' : 'horas'}.`;
   $('[data-otra]').hidden = !!porNumero;
-  $('[data-ya-wa]').href = waLink(`Hola, ya envié una solicitud de cita a nombre de ${porNumero ? cita.nombre : s.nombre} y quisiera cambiarla.`);
+  $('[data-ya-wa]').href = waLink(`Hola, ya envié una solicitud de cita a nombre de ${porNumero ? cita.nombre : s.nombre} y quisiera cambiarla.`, porNumero ? cita.doctor : (s?.docId || DOCTORES.find((d) => d.nombre === s?.doctor)?.id || cita.doctor || 'd2'));
   $('[data-ya]').hidden = false;
   $('[data-nota]').hidden = true;
   tarjeta.classList.add('bloqueada');
@@ -483,7 +506,7 @@ async function enviar() {
   // Sin Firebase: la solicitud se manda por WhatsApp como antes
   if (!window.enviarCita) {
     tarjeta.classList.add('enviada');
-    window.open(waLink(msg), '_blank', 'noopener');
+    window.open(waLink(msg, cita.doctor), '_blank', 'noopener');
     return;
   }
   if (solicitudReciente()) { bloquear(); return; }
@@ -502,10 +525,10 @@ async function enviar() {
     });
     tarjeta.classList.add('enviada');
     $('[data-ok-txt]').textContent = `Le llegó a ${doctor(cita.doctor).nombre}. Cuando la apruebe te escribiremos al ${cita.celular} para confirmar tu cita.`;
-    $('[data-ok-wa]').href = waLink(msg);
+    $('[data-ok-wa]').href = waLink(msg, cita.doctor);
     $('[data-ok]').hidden = false;
     $('[data-nota]').hidden = true;
-    recordarEnvio({ doctor: doctor(cita.doctor).nombre, cuando: `${fechaLarga(cita.dia).toLowerCase()} a las ${fmtHora(cita.hora)}`, celular: cita.celular, nombre: cita.nombre });
+    recordarEnvio({ docId: cita.doctor, doctor: doctor(cita.doctor).nombre, cuando: `${fechaLarga(cita.dia).toLowerCase()} a las ${fmtHora(cita.hora)}`, celular: cita.celular, nombre: cita.nombre });
     tarjeta.classList.add('bloqueada');
   } catch (e2) {
     console.error(e2);
@@ -514,7 +537,7 @@ async function enviar() {
       btn.disabled = false; btnTxt.textContent = 'Enviar solicitud';
       return;
     }
-    err.innerHTML = `No se pudo enviar tu solicitud. Revisa tu internet o <a href="${waLink(msg)}" target="_blank" rel="noopener">envíala por WhatsApp</a>.`;
+    err.innerHTML = `No se pudo enviar tu solicitud. Revisa tu internet o <a href="${waLink(msg, cita.doctor)}" target="_blank" rel="noopener">envíala por WhatsApp</a>.`;
   }
   btn.disabled = false; btnTxt.textContent = 'Enviar solicitud';
 }
@@ -541,11 +564,11 @@ pintarTarjeta();
 // ===== WhatsApp rápido =====
 const chips = $('[data-chips]');
 CHIPS.forEach((t) => chips.insertAdjacentHTML('beforeend',
-  `<a class="chip" href="${waLink('Hola. ' + t)}" target="_blank" rel="noopener">${t}</a>`));
+  `<a class="chip" href="#whatsapp" data-wa="${'Hola. ' + t}">${t}</a>`));
 $('[data-wa-libre]').addEventListener('submit', (e) => {
   e.preventDefault();
   const t = e.target.texto.value.trim();
-  window.open(waLink(t || 'Hola, quisiera hacer una consulta.'), '_blank', 'noopener');
+  elegirWa(t || 'Hola, quisiera hacer una consulta.');
 });
 
 // ===== Aparición al hacer scroll =====

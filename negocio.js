@@ -1,8 +1,6 @@
 // ===== Datos del negocio (editar aquí) =====
 const NEGOCIO = {
   nombre: 'Yenmar',
-  wa: '51972845629',
-  telefono: '972 845 629',
   direccion: 'Jr. 7 de Junio N° 1026',
 };
 
@@ -101,10 +99,14 @@ const escHtml = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<'
 // ===== Odontólogos =====
 // funciones: ids de servicios que realiza (cada doctor los cambia desde su panel)
 // turnos: 0 = domingo … 6 = sábado → turnos fijos de cada día
+// wa: WhatsApp del doctor (ahí llegan las reservas hechas con él)
+// unidad: sillón dental. Roxana e Iván comparten 'u1': una hora ocupada por uno queda ocupada para el otro.
+//   Yenny tiene su propia unidad 'u2' y su agenda es independiente.
 // porConfirmar: turnos en que el doctor va solo algunos días; la cita se confirma por WhatsApp
 const DOCTORES = [
   {
     id: 'd1', nombre: 'Dra. Roxana Seijas Figueroa', corto: 'Dra. Roxana', cargo: 'Cirujana dentista', foto: 'media/doc-1.jpg',
+    wa: '51995986314', unidad: 'u1',
     resumen: 'Atención integral para niños y adultos.',
     saludos: [
       '¡Hola! Soy la Dra. Roxana. Te atiendo con calma y te explico cada paso.',
@@ -117,6 +119,7 @@ const DOCTORES = [
   },
   {
     id: 'd2', nombre: 'Dra. Yenny Meza Morales', corto: 'Dra. Yenny', cargo: 'Cirujana dentista', foto: 'media/doc-2.jpg',
+    wa: '51961997201', unidad: 'u2',
     resumen: 'Estética dental y tratamientos para toda la familia.',
     saludos: [
       '¡Hola! Soy la Dra. Yenny. Aquí estás en buenas manos.',
@@ -129,6 +132,7 @@ const DOCTORES = [
   },
   {
     id: 'd3', nombre: 'Dr. Iván Meza Morales', corto: 'Dr. Iván', cargo: 'Cirujano dentista', foto: 'media/doc-3.jpg',
+    wa: '51961997197', unidad: 'u1',
     resumen: 'Ortodoncia con brackets y atención integral.',
     saludos: [
       '¡Hola! Soy el Dr. Iván. Sin dolor y sin apuros, te lo prometo.',
@@ -142,6 +146,8 @@ const DOCTORES = [
   },
 ];
 const doctor = (id) => DOCTORES.find((x) => x.id === id);
+// Los otros doctores que usan la misma unidad de trabajo
+const companerosDeUnidad = (id) => DOCTORES.filter((x) => x.id !== id && x.unidad && x.unidad === doctor(id)?.unidad).map((x) => x.id);
 // ¿Ese turno del doctor es "por confirmar"?
 const porConfirmar = (docId, t) => (doctor(docId)?.porConfirmar || []).includes(t);
 // Servicios que cada doctor guardó en su panel (agenda/{doctor}.servicios): reemplazan a los de arriba

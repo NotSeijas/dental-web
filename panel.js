@@ -50,6 +50,8 @@ const misTurnos = (d) => turnosDe(YO, d, SOLIC);
 const misHoras = (d) => horasDeDoctor(YO, d, SOLIC);
 const pasada = (d, h) => d.getTime() === hoy.getTime() && h + 0.5 <= new Date().getHours() + new Date().getMinutes() / 60;
 const estaOcupado = (id, d, h) => { const e = ocup(id, d); return e.completo || e.horas.includes(h); };
+// Doctor de la misma unidad (sillón compartido) que ya tiene esa hora ocupada, o undefined
+const unidadOcupadaPor = (id, d, h) => companerosDeUnidad(id).find((o) => ocup(o, d).horas.includes(h));
 
 // ----- Guardado -----
 const guardadoEl = $('[data-guardado]');
@@ -106,6 +108,7 @@ function pintarCitas() {
     const d = fechaDe(c.fecha);
     const yaPaso = c.fecha < claveFecha(hoy);
     const choque = !yaPaso && estaOcupado(c.doctor, d, c.hora);
+    const enUnidad = !yaPaso && !choque && unidadOcupadaPor(c.doctor, d, c.hora);
     return `<article class="cita${yaPaso ? ' cita--paso' : ''}">
       <div class="cita__cuando">
         <b>${fechaCorta(c.fecha)}</b><span>${fmtHora(c.hora)}</span><small>Turno ${(TURNOS[c.turno]?.nombre || '').toLowerCase()}</small>
@@ -115,7 +118,7 @@ function pintarCitas() {
         <p class="cita__serv">${escHtml(c.servicio)}</p>
         ${c.comentario ? `<p class="cita__coment">“${escHtml(c.comentario)}”</p>` : '<p class="cita__coment cita__coment--vacio">No dejó comentario.</p>'}
         <a class="cita__cel" href="https://wa.me/51${c.celular}" target="_blank" rel="noopener">WhatsApp ${c.celular.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3')}</a>
-        ${yaPaso ? '<p class="cita__aviso">Esta fecha ya pasó.</p>' : choque ? '<p class="cita__aviso">Ojo: esa hora ya la tienes marcada como ocupada.</p>' : ''}
+        ${yaPaso ? '<p class="cita__aviso">Esta fecha ya pasó.</p>' : choque ? '<p class="cita__aviso">Ojo: esa hora ya la tienes marcada como ocupada.</p>' : enUnidad ? `<p class="cita__aviso">Ojo: a esa hora la unidad la usa ${doctor(enUnidad).corto}.</p>` : ''}
       </div>
       <div class="cita__acciones">
         <button class="boton boton--chico" type="button" data-cita="aprobada" data-id="${c.id}">Aprobar</button>
@@ -131,6 +134,8 @@ citasEl.addEventListener('click', (e) => {
   if (!c) return;
   const ok = b.dataset.cita === 'aprobada';
   const doc = doctor(c.doctor), d = fechaDe(c.fecha);
+  const usa = ok && unidadOcupadaPor(c.doctor, d, c.hora);
+  if (usa && !confirm(`A esa hora ${doctor(usa).corto} ya tiene la unidad ocupada. ¿Aprobar igual?`)) return;
   const cuando = `el ${fechaLarga(d)} a las ${fmtHora(c.hora)}`;  // fmtHora ya termina en «m.»: no repetir el punto
   const txt = ok
     ? `Hola ${c.nombre}, te saluda ${doc.nombre} del Centro Odontológico ${NEGOCIO.nombre}. Tu cita de ${c.servicio.toLowerCase()} quedó *confirmada* para ${cuando} Te esperamos en ${NEGOCIO.direccion}.`
@@ -323,7 +328,7 @@ function pintarDia(nuevo = false) {
   completoEl.checked = e.completo;
   completoEl.closest('label').hidden = !horas.length;
   const ocupadas = horas.filter((h) => e.horas.includes(h)).length;
-  const libres = e.completo ? 0 : horas.filter((h) => !e.horas.includes(h) && !pasada(sel, h)).length;
+  const libres = e.completo ? 0 : horas.filter((h) => !e.horas.includes(h) && !pasada(sel, h) && !unidadOcupadaPor(YO, sel, h)).length;
   $('[data-resumen]').innerHTML = e.completo
     ? '<span class="pastilla pastilla--cerrado">Los pacientes ven este día como lleno</span>'
     : `<span class="pastilla">${libres} horas libres</span><span class="pastilla pastilla--ocupada">${ocupadas} ocupadas</span>`;
@@ -351,13 +356,18 @@ function pintarDia(nuevo = false) {
     const h = +fila.dataset.h;
     const oc = e.completo || e.horas.includes(h);
     const paso = pasada(sel, h);
+    // Roxana e Iván comparten unidad: si el otro ya tiene esa hora, aquí no se puede tomar
+    const usa = !oc && unidadOcupadaPor(YO, sel, h);
     const b = $('.hora', fila);
     b.setAttribute('aria-pressed', String(oc));
-    b.disabled = e.completo || paso;
+    b.disabled = e.completo || paso || !!usa;
     fila.classList.toggle('ocupada', oc);
+    fila.classList.toggle('unidad', !!usa);
     fila.classList.toggle('pasada', paso);
-    $('.hora__estado', b).textContent = paso ? 'Pasó' : oc ? 'Ocupada' : 'Libre';
+    $('.hora__estado', b).textContent = paso ? 'Pasó' : oc ? 'Ocupada' : usa ? `Unidad: ${doctor(usa).corto}` : 'Libre';
     const nota = $('.nota', fila);
+    nota.disabled = !!usa;
+    nota.placeholder = usa ? `La unidad la usa ${doctor(usa).corto}` : 'Paciente o tratamiento (opcional)';
     if (document.activeElement !== nota) nota.value = notas[String(h)] || '';
     $$('[data-otro]', fila).forEach((s) => {
       const o = estaOcupado(s.dataset.otro, sel, h);
@@ -370,7 +380,10 @@ function pintarDia(nuevo = false) {
     const grupo = p.closest('.grupo');
     const hs = $$('.fila', grupo).map((x) => +x.dataset.h).filter((h) => !pasada(sel, h));
     const en = [YO, ...$$('[data-otro]', $('.fila', grupo)).map((s) => s.dataset.otro)];
-    const libresJuntos = hs.reduce((n, h) => n + en.filter((id) => !estaOcupado(id, sel, h)).length, 0);
+    // Por unidad: Roxana e Iván libres a la misma hora cuentan como un solo espacio
+    const libresJuntos = hs.reduce((n, h) => n + new Set(en
+      .filter((id) => !estaOcupado(id, sel, h) && !unidadOcupadaPor(id, sel, h))
+      .map((id) => doctor(id).unidad || id)).size, 0);
     p.textContent = `Entre los ${en.length} hay ${libresJuntos} horas libres en este turno.`;
   });
 }
