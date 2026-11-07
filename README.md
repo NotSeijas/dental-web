@@ -1,6 +1,6 @@
 # Centro Odontológico Yenmar
 
-Sitio estático (HTML/CSS/JS). Vista previa: config `dental-web` en `E:\codex\.claude\launch.json`, puerto 6200. Publicado en https://notseijas.github.io/dental-web/.
+Sitio estático (HTML/CSS/JS). Vista previa: config `dental-web` en `E:\codex\.claude\launch.json`, puerto 6200. Publicado en https://odontologiayenmar.com (GitHub Pages con archivo CNAME; dominio comprado en Squarespace, DNS: 4 A @ → 185.199.108-111.153 y CNAME www → notseijas.github.io).
 
 - `negocio.js`: nombre, WhatsApp, dirección, **servicios** (`SERVICIOS`), **turnos** (mañana 8–1, tarde 3–6, noche 6–9) y **odontólogos** (`DOCTORES`: nombre, foto, funciones y turnos fijos por día). El horario general de la clínica se arma solo con los turnos de los doctores. Roxana y Yenny: mañana, tarde y noche; Iván: tarde y noche, y algunas mañanas (`porConfirmar`): se puede pedir cita, con un aviso de que viene solo algunos días.
 - `main.js`: mensajes rápidos de WhatsApp (`CHIPS`), sección Equipo y la reserva.
