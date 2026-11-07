@@ -2,7 +2,7 @@
 // La web solo lee la agenda de cada doctor; cada doctor edita la suya desde el panel.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
-  getFirestore, collection, doc, onSnapshot, query, where, documentId, setDoc, deleteDoc, addDoc, updateDoc, getDoc, serverTimestamp,
+  getFirestore, collection, doc, onSnapshot, query, where, documentId, setDoc, deleteDoc, addDoc, updateDoc, getDoc, serverTimestamp, writeBatch,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 export const FIREBASE = {
@@ -110,8 +110,15 @@ export function guardarServicios(docId, servicios) {
 }
 
 // ----- Solicitudes de cita de los pacientes (las aprueba el doctor) -----
+// La cita se guarda junto con una marca por celular (limite/{celular}). Las reglas de Firestore
+// solo aceptan las dos juntas y no dejan renovar la marca antes de 24 horas: un mismo número no
+// puede mandar solicitudes seguidas (sale el error "permission-denied").
 export function crearCita(c) {
-  return addDoc(collection(db, 'citas'), { ...c, estado: 'pendiente', creada: serverTimestamp() });
+  const ref = doc(collection(db, 'citas'));
+  const lote = writeBatch(db);
+  lote.set(ref, { ...c, estado: 'pendiente', creada: serverTimestamp() });
+  lote.set(doc(db, 'limite', c.celular), { ultima: serverTimestamp(), cita: ref.id });
+  return lote.commit();
 }
 
 export function escucharCitas(docId, cb) {

@@ -45,11 +45,27 @@ service cloud.firestore {
         && request.resource.data.comentario is string && request.resource.data.comentario.size() <= 400
         && request.resource.data.fecha is string && request.resource.data.fecha.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
         && request.resource.data.hora is number
-        && request.resource.data.turno in ['manana', 'tarde', 'noche'];
+        && request.resource.data.turno in ['manana', 'tarde', 'noche']
+        // va junto con la marca de su celular (máximo una solicitud por número cada 24 horas)
+        && getAfter(/databases/$(database)/documents/limite/$(request.resource.data.celular)).data.cita == id
+        && getAfter(/databases/$(database)/documents/limite/$(request.resource.data.celular)).data.ultima == request.time;
       allow read: if esDe(resource.data.doctor);
       allow update: if esDe(resource.data.doctor)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'respondida'])
         && request.resource.data.estado in ['aprobada', 'rechazada'];
+    }
+
+    function marcaValida(celular) {
+      return request.resource.data.keys().hasOnly(['ultima', 'cita'])
+        && request.resource.data.ultima == request.time
+        && request.resource.data.cita is string
+        && getAfter(/databases/$(database)/documents/citas/$(request.resource.data.cita)).data.celular == celular;
+    }
+    // Última solicitud de cada celular: nadie la lee; solo se crea o renueva junto con una cita
+    // nueva, y renovarla exige que hayan pasado 24 horas desde la anterior.
+    match /limite/{celular} {
+      allow create: if celular.matches('9[0-9]{8}') && marcaValida(celular);
+      allow update: if request.time > resource.data.ultima + duration.value(24, 'h') && marcaValida(celular);
     }
 
     // Pedir unirse al turno de otro doctor

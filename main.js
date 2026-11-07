@@ -10,6 +10,7 @@ const CHIPS = [
 // ===== Utilidades =====
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const LIMITE_HORAS = 24, CLAVE_ENVIO = 'yenmar-solicitud';  // una solicitud por paciente cada 24 h
 const waLink = (txt) => `https://wa.me/${NEGOCIO.wa}?text=${encodeURIComponent(txt)}`;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -424,6 +425,33 @@ function pintarTarjeta() {
   $('[data-ok]').hidden = true;
   $('[data-nota]').hidden = false;
   $('[data-error]').textContent = '';
+  $('[data-ya]').hidden = true;
+  tarjeta.classList.remove('bloqueada');
+  if (solicitudReciente()) bloquear();
+}
+
+// ---- Una solicitud por paciente cada 24 horas ----
+// En este celular/navegador se recuerda la última solicitud enviada; además Firebase rechaza otra
+// del mismo número antes de 24 horas (reglas de limite/{celular}).
+function solicitudReciente() {
+  try {
+    const s = JSON.parse(localStorage.getItem(CLAVE_ENVIO) || 'null');
+    return s && Date.now() - s.t < LIMITE_HORAS * 3600e3 ? s : null;
+  } catch { return null; }
+}
+function recordarEnvio(info) {
+  try { localStorage.setItem(CLAVE_ENVIO, JSON.stringify({ t: Date.now(), ...info })); } catch {}
+}
+function bloquear(porNumero) {
+  const s = solicitudReciente();
+  const horas = s ? Math.max(1, Math.ceil((s.t + LIMITE_HORAS * 3600e3 - Date.now()) / 3600e3)) : LIMITE_HORAS;
+  $('[data-ya-txt]').textContent = porNumero
+    ? `El número ${cita.celular} ya tiene una solicitud enviada en las últimas ${LIMITE_HORAS} horas. El odontólogo te escribirá por WhatsApp para confirmarla.`
+    : `${s.doctor} revisará tu cita del ${s.cuando} y te escribirá al ${s.celular} para confirmarla. Podrás pedir otra en ${horas} ${horas === 1 ? 'hora' : 'horas'}.`;
+  $('[data-ya-wa]').href = waLink(`Hola, ya envié una solicitud de cita a nombre de ${porNumero ? cita.nombre : s.nombre} y quisiera cambiarla.`);
+  $('[data-ya]').hidden = false;
+  $('[data-nota]').hidden = true;
+  tarjeta.classList.add('bloqueada');
 }
 
 async function enviar() {
@@ -449,6 +477,7 @@ async function enviar() {
     window.open(waLink(msg), '_blank', 'noopener');
     return;
   }
+  if (solicitudReciente()) { bloquear(); return; }
   if (btn.disabled) return;
   btn.disabled = true; btnTxt.textContent = 'Enviando…';
   try {
@@ -467,8 +496,15 @@ async function enviar() {
     $('[data-ok-wa]').href = waLink(msg);
     $('[data-ok]').hidden = false;
     $('[data-nota]').hidden = true;
+    recordarEnvio({ doctor: doctor(cita.doctor).nombre, cuando: `${fechaLarga(cita.dia).toLowerCase()} a las ${fmtHora(cita.hora)}`, celular: cita.celular, nombre: cita.nombre });
+    tarjeta.classList.add('bloqueada');
   } catch (e2) {
     console.error(e2);
+    if (e2?.code === 'permission-denied') {
+      bloquear(true);
+      btn.disabled = false; btnTxt.textContent = 'Enviar solicitud';
+      return;
+    }
     err.innerHTML = `No se pudo enviar tu solicitud. Revisa tu internet o <a href="${waLink(msg)}" target="_blank" rel="noopener">envíala por WhatsApp</a>.`;
   }
   btn.disabled = false; btnTxt.textContent = 'Enviar solicitud';
