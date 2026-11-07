@@ -466,24 +466,51 @@ function solicitudReciente() {
 // Si todavía está pendiente, Firebase la vuelve a rechazar y sale el aviso por número.
 document.querySelector('[data-otra]')?.addEventListener('click', () => {
   try { localStorage.removeItem(CLAVE_ENVIO); } catch {}
+  apagarMiCita(); apagarMiCita = () => {};
   $('[data-ya]').hidden = true;
   $('[data-nota]').hidden = false;
   tarjeta.classList.remove('bloqueada', 'enviada');
 });
+// Estado de la última solicitud enviada desde este equipo (lo cambia el doctor en su panel)
+let apagarMiCita = () => {};
+function seguirMiCita() {
+  const s = solicitudReciente();
+  apagarMiCita();
+  apagarMiCita = () => {};
+  if (!s?.citaId || !window.escucharMiCita) return;
+  apagarMiCita = window.escucharMiCita(s.citaId, (estado) => {
+    const t = solicitudReciente();
+    if (!t || t.citaId !== s.citaId || t.estado === estado) return;
+    recordarEnvio({ ...t, estado });
+    if (tarjeta.classList.contains('bloqueada')) bloquear();
+  });
+}
+window.seguirMiCita = seguirMiCita;
 function recordarEnvio(info) {
+  // info.t (si viene) conserva la hora en que se envió
   try { localStorage.setItem(CLAVE_ENVIO, JSON.stringify({ t: Date.now(), ...info })); } catch {}
 }
+const conPunto = (t) => (t.endsWith('.') ? t : t + '.');
 function bloquear(porNumero) {
   const s = solicitudReciente();
   const horas = s ? Math.max(1, Math.ceil((s.t + LIMITE_HORAS * 3600e3 - Date.now()) / 3600e3)) : LIMITE_HORAS;
+  const estado = porNumero ? null : s?.estado;
+  $('[data-ya-tit]').textContent = porNumero ? 'Este número no puede pedir otra cita por ahora.'
+    : estado === 'aprobada' ? '¡Tu cita fue aprobada!'
+    : estado === 'rechazada' ? 'Tu solicitud no fue aceptada.'
+    : 'Ya enviaste una solicitud.';
   $('[data-ya-txt]').textContent = porNumero
-    ? `El número ${cita.celular} ya tiene una solicitud enviada en las últimas ${LIMITE_HORAS} horas. El odontólogo te escribirá por WhatsApp para confirmarla.`
+    ? `El ${cita.celular} ya tiene una solicitud esperando respuesta, o hoy ya le rechazaron 3 solicitudes (en ese caso podrá pedir otra mañana). Si ya enviaste una, el odontólogo te escribirá por WhatsApp.`
+    : estado === 'aprobada' ? `${s.doctor} aprobó tu cita del ${conPunto(s.cuando)} Contáctate con el dr. y presiona el botón de WhatsApp.`
+    : estado === 'rechazada' ? `${s.doctor} no podrá atenderte el ${conPunto(s.cuando)} Puedes pedir otra cita con otro día u hora.`
     : `${s.doctor} revisará tu cita del ${s.cuando} y te escribirá al ${s.celular} para confirmarla. Podrás pedir otra en ${horas} ${horas === 1 ? 'hora' : 'horas'}.`;
-  $('[data-otra]').hidden = !!porNumero;
+  $('[data-ya]').classList.toggle('tarjeta__ya--ok', estado === 'aprobada');
+  $('[data-ok]').hidden = true;
+  $('[data-otra]').hidden = !!porNumero || estado === 'aprobada';
   // Solo si su solicitud sí se envió: botón para hablar con su doctor sobre esa cita
   const dr = $('[data-ya-dr]'), docId = s?.docId || DOCTORES.find((d) => d.nombre === s?.doctor)?.id;
-  dr.hidden = !!porNumero || !s?.msgDr || !docId;
-  if (!dr.hidden) dr.href = waLink(s.msgDr, docId);
+  dr.hidden = !!porNumero || !s?.msgDr || !docId || estado === 'rechazada';
+  if (!dr.hidden) dr.href = waLink(estado === 'aprobada' && s.msgAprobada ? s.msgAprobada : s.msgDr, docId);
   $('[data-ya-wa]').href = waLink(`Hola, ya envié una solicitud de cita a nombre de ${porNumero ? cita.nombre : s.nombre} y quisiera cambiarla.`, porNumero ? cita.doctor : (s?.docId || DOCTORES.find((d) => d.nombre === s?.doctor)?.id || cita.doctor || 'd2'));
   $('[data-ya]').hidden = false;
   $('[data-nota]').hidden = true;
@@ -517,7 +544,7 @@ async function enviar() {
   if (btn.disabled) return;
   btn.disabled = true; btnTxt.textContent = 'Enviando…';
   try {
-    await window.enviarCita({
+    const citaId = await window.enviarCita({
       doctor: cita.doctor,
       servicio: nombreServ(cita.servicio),
       fecha: claveFecha(cita.dia),
@@ -533,8 +560,10 @@ async function enviar() {
     $('[data-ok-dr]').href = waLink(msgDr, cita.doctor);
     $('[data-ok]').hidden = false;
     $('[data-nota]').hidden = true;
-    recordarEnvio({ msgDr, docId: cita.doctor, doctor: doctor(cita.doctor).nombre, cuando: `${fechaLarga(cita.dia).toLowerCase()} a las ${fmtHora(cita.hora)}`, celular: cita.celular, nombre: cita.nombre });
+    const msgAprobada = `Hola ${doctor(cita.doctor).corto}, soy ${cita.nombre}. Vi que aprobó mi cita de ${nombreServ(cita.servicio).toLowerCase()} del ${fechaLarga(cita.dia).toLowerCase()} a las ${fmtHora(cita.hora)} Quería coordinar con usted. Gracias.`;
+    recordarEnvio({ citaId, estado: 'pendiente', msgDr, msgAprobada, docId: cita.doctor, doctor: doctor(cita.doctor).nombre, cuando: `${fechaLarga(cita.dia).toLowerCase()} a las ${fmtHora(cita.hora)}`, celular: cita.celular, nombre: cita.nombre });
     tarjeta.classList.add('bloqueada');
+    seguirMiCita();
   } catch (e2) {
     console.error(e2);
     if (e2?.code === 'permission-denied') {

@@ -317,7 +317,7 @@
             <a class="tarjeta__dr" data-ok-dr href="#" target="_blank" rel="noopener"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.5A11.8 11.8 0 0 0 1.7 17.6L0 24l6.6-1.7A11.8 11.8 0 0 0 20.5 3.5zM12 21.6c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.9 1 1-3.8-.2-.4a9.8 9.8 0 1 1 8.5 4.8zm5.4-7.3c-.3-.1-1.8-.9-2-1s-.5-.1-.7.1-.8 1-.9 1.2-.3.2-.6.1a8 8 0 0 1-4-3.5c-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6a1.1 1.1 0 0 0-.8.4 3.4 3.4 0 0 0-1 2.5 5.9 5.9 0 0 0 1.2 3.1 13.4 13.4 0 0 0 5.2 4.6c1.9.8 2.7.9 3.6.7a3.1 3.1 0 0 0 2-1.4 2.5 2.5 0 0 0 .2-1.4c-.1-.1-.3-.2-.6-.3z"/></svg>Habla con tu dr.</a>
           </div>
           <div class="tarjeta__ya" data-ya hidden>
-            <p><b>Ya enviaste una solicitud.</b> <span data-ya-txt></span></p>
+            <p><b data-ya-tit>Ya enviaste una solicitud.</b> <span data-ya-txt></span></p>
             <a class="tarjeta__dr" data-ya-dr href="#" target="_blank" rel="noopener" hidden><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.5A11.8 11.8 0 0 0 1.7 17.6L0 24l6.6-1.7A11.8 11.8 0 0 0 20.5 3.5zM12 21.6c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.9 1 1-3.8-.2-.4a9.8 9.8 0 1 1 8.5 4.8zm5.4-7.3c-.3-.1-1.8-.9-2-1s-.5-.1-.7.1-.8 1-.9 1.2-.3.2-.6.1a8 8 0 0 1-4-3.5c-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6a1.1 1.1 0 0 0-.8.4 3.4 3.4 0 0 0-1 2.5 5.9 5.9 0 0 0 1.2 3.1 13.4 13.4 0 0 0 5.2 4.6c1.9.8 2.7.9 3.6.7a3.1 3.1 0 0 0 2-1.4 2.5 2.5 0 0 0 .2-1.4c-.1-.1-.3-.2-.6-.3z"/></svg>Habla con tu dr.</a>
             <a class="tarjeta__wa" data-ya-wa href="#" target="_blank" rel="noopener">¿Necesitas cambiarla? Escríbenos por WhatsApp</a>
             <button class="tarjeta__otra" type="button" data-otra>¿El doctor no pudo atenderte? Pide otra cita</button>
@@ -551,8 +551,8 @@
   <script src="main.js"></script>
   <script type="module">
     // Lee en vivo los horarios que el dentista marca como ocupados
-    import { escucharTodos, escucharSolicitudes, escucharServicios, crearCita, configurado } from './agenda.js';
-    if (configurado) window.enviarCita = crearCita;
+    import { escucharTodos, escucharSolicitudes, escucharServicios, crearCita, escucharMiCita, configurado } from './agenda.js';
+    if (configurado) { window.enviarCita = crearCita; window.escucharMiCita = escucharMiCita; window.seguirMiCita?.(); }
     const [desde, hasta] = window.rangoReserva;
     escucharTodos(window.doctoresIds, desde, hasta, window.ponerOcupado);
     escucharSolicitudes(desde, hasta, window.ponerExtras);

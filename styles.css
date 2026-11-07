@@ -871,3 +871,6 @@ body.cargando .gotita { opacity: 0; }
 .tarjeta__dr:hover { background: #1fb457; }
 .tarjeta__dr .ico { width: 20px; height: 20px; fill: currentColor; stroke: none; }
 .tarjeta__dr[hidden] { display: none; }
+
+.tarjeta__ya--ok { background: var(--hoja-clara); color: #2f4708; }
+.tarjeta__otra[hidden] { display: none; }

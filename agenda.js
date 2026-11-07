@@ -2,7 +2,7 @@
 // La web solo lee la agenda de cada doctor; cada doctor edita la suya desde el panel.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
-  getFirestore, collection, doc, onSnapshot, query, where, documentId, setDoc, deleteDoc, addDoc, updateDoc, getDoc, serverTimestamp, writeBatch,
+  getFirestore, collection, doc, onSnapshot, query, where, documentId, setDoc, deleteDoc, addDoc, updateDoc, getDoc, serverTimestamp, writeBatch, runTransaction, Timestamp,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 export const FIREBASE = {
@@ -113,12 +113,21 @@ export function guardarServicios(docId, servicios) {
 // La cita se guarda junto con una marca por celular (limite/{celular}). Las reglas de Firestore
 // solo aceptan las dos juntas y no dejan renovar la marca antes de 24 horas: un mismo número no
 // puede mandar solicitudes seguidas (sale el error "permission-denied").
-export function crearCita(c) {
+export async function crearCita(c) {
   const ref = doc(collection(db, 'citas'));
   const lote = writeBatch(db);
   lote.set(ref, { ...c, estado: 'pendiente', creada: serverTimestamp() });
-  lote.set(doc(db, 'limite', c.celular), { ultima: serverTimestamp(), cita: ref.id });
-  return lote.commit();
+  // merge: se conservan los rechazos del día que haya acumulado ese número
+  lote.set(doc(db, 'limite', c.celular), { ultima: serverTimestamp(), cita: ref.id, libre: false }, { merge: true });
+  await lote.commit();
+  return ref.id;
+}
+
+// El paciente sigue el estado de su propia cita (pendiente → aprobada | rechazada)
+export function escucharMiCita(id, cb) {
+  if (!db) return () => {};
+  return onSnapshot(doc(db, 'citas', id), (s) => { if (s.exists()) cb(s.data().estado); },
+    (err) => console.warn('Estado de la cita no disponible:', err.message));
 }
 
 export function escucharCitas(docId, cb) {
@@ -135,8 +144,22 @@ export function responderCita(id, estado) {
   return updateDoc(doc(db, 'citas', id), { estado, respondida: serverTimestamp() });
 }
 
-// Al rechazar una cita se libera el número del paciente para que pueda pedir otra de inmediato.
-// Las reglas solo lo permiten si la marca apunta a esa cita, ya rechazada, y la borra su doctor.
+// Al rechazar una cita se libera el número del paciente para que pueda pedir otra de inmediato,
+// y se cuentan sus rechazos del día: al llegar a MAX_RECHAZOS no puede pedir más citas hasta mañana.
+// Las reglas solo lo permiten si la marca apunta a esa cita, ya rechazada, y lo hace su doctor.
+export const MAX_RECHAZOS = 3;
 export function liberarCelular(celular) {
-  return deleteDoc(doc(db, 'limite', celular));
+  const ref = doc(db, 'limite', celular);
+  return runTransaction(db, async (tx) => {
+    const s = await tx.get(ref);
+    if (!s.exists() || s.data().libre) return;
+    const hoy = claveFecha(new Date());
+    const rechazos = (s.data().dia === hoy ? s.data().rechazos || 0 : 0) + 1;
+    const cambio = { libre: true, rechazos, dia: hoy };
+    if (rechazos >= MAX_RECHAZOS) {
+      const manana = new Date(); manana.setHours(24, 0, 0, 0);
+      cambio.bloqueoHasta = Timestamp.fromDate(manana);
+    }
+    tx.update(ref, cambio);
+  });
 }

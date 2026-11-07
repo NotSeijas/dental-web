@@ -49,26 +49,47 @@ service cloud.firestore {
         // va junto con la marca de su celular (máximo una solicitud por número cada 24 horas)
         && getAfter(/databases/$(database)/documents/limite/$(request.resource.data.celular)).data.cita == id
         && getAfter(/databases/$(database)/documents/limite/$(request.resource.data.celular)).data.ultima == request.time;
-      allow read: if esDe(resource.data.doctor);
+      // El paciente guarda el id de su cita (aleatorio, imposible de adivinar) para ver si se aprobó
+      allow get: if true;
+      allow list: if esDe(resource.data.doctor);
       allow update: if esDe(resource.data.doctor)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'respondida'])
         && request.resource.data.estado in ['aprobada', 'rechazada'];
     }
 
     function marcaValida(celular) {
-      return request.resource.data.keys().hasOnly(['ultima', 'cita'])
+      return request.resource.data.keys().hasOnly(['ultima', 'cita', 'libre', 'rechazos', 'dia', 'bloqueoHasta'])
+        && request.resource.data.get('libre', false) == false
         && request.resource.data.ultima == request.time
         && request.resource.data.cita is string
         && getAfter(/databases/$(database)/documents/citas/$(request.resource.data.cita)).data.celular == celular;
     }
-    // Última solicitud de cada celular: nadie la lee; solo se crea o renueva junto con una cita
-    // nueva, y renovarla exige que hayan pasado 24 horas desde la anterior.
+    function citaDeMarca() {
+      return get(/databases/$(database)/documents/citas/$(resource.data.cita)).data;
+    }
+    // Última solicitud de cada celular: { ultima, cita, libre, rechazos, dia, bloqueoHasta }
+    // Solo se crea o renueva junto con una cita nueva. Renovarla exige que hayan pasado 24 horas
+    // o que el doctor haya rechazado la anterior (libre), y nunca antes de bloqueoHasta.
     match /limite/{celular} {
-      allow create: if celular.matches('9[0-9]{8}') && marcaValida(celular);
-      allow update: if request.time > resource.data.ultima + duration.value(24, 'h') && marcaValida(celular);
-      // Si el doctor rechaza esa cita, el número queda libre al instante
-      allow delete: if esDe(get(/databases/$(database)/documents/citas/$(resource.data.cita)).data.doctor)
-        && get(/databases/$(database)/documents/citas/$(resource.data.cita)).data.estado == 'rechazada';
+      allow get: if esDe(citaDeMarca().doctor);
+      allow create: if celular.matches('9[0-9]{8}') && marcaValida(celular)
+        && request.resource.data.keys().hasOnly(['ultima', 'cita', 'libre']);
+      allow update: if marcaValida(celular)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ultima', 'cita', 'libre'])
+        && (resource.data.get('libre', false) == true || request.time > resource.data.ultima + duration.value(24, 'h'))
+        && request.time > resource.data.get('bloqueoHasta', timestamp.value(0))
+      // El doctor rechaza esa cita: el número queda libre y se cuenta el rechazo del día
+      // (al tercer rechazo del día queda bloqueado hasta la medianoche: bloqueoHasta)
+        || (esDe(citaDeMarca().doctor)
+          && citaDeMarca().estado == 'rechazada'
+          && resource.data.get('libre', false) == false
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['libre', 'rechazos', 'dia', 'bloqueoHasta'])
+          && request.resource.data.libre == true
+          && request.resource.data.rechazos is int
+          && request.resource.data.rechazos >= 1 && request.resource.data.rechazos <= resource.data.get('rechazos', 0) + 1
+          && request.resource.data.dia is string
+          && request.resource.data.get('bloqueoHasta', request.time) is timestamp
+          && request.resource.data.get('bloqueoHasta', request.time) <= request.time + duration.value(25, 'h'));
     }
 
     // Pedir unirse al turno de otro doctor
