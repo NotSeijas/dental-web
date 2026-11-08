@@ -874,3 +874,4 @@ body.cargando .gotita { opacity: 0; }
 
 .tarjeta__ya--ok { background: var(--hoja-clara); color: #2f4708; }
 .tarjeta__otra[hidden] { display: none; }
+.horario__ultima dd { color: #b7e04a; font-weight: 600; }

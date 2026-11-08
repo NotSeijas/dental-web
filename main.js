@@ -61,6 +61,11 @@ const igualSabado = JSON.stringify(NEGOCIO.horario[6]) === JSON.stringify(NEGOCI
   horarioEl.insertAdjacentHTML('beforeend',
     `<div><dt>${etiqueta}</dt><dd>${tramos ? tramos.map(([a, b]) => `${fmtHora(a)} – ${fmtHora(b)}`).join('<br>') : 'Cerrado'}</dd></div>`);
 });
+// La última reserva termina justo al cierre (cada cita dura BLOQUE horas)
+{
+  const cierre = Math.max(...Object.values(NEGOCIO.horario).map((ts) => ts.at(-1)[1]));
+  horarioEl.insertAdjacentHTML('beforeend', `<div class="horario__ultima"><dt>Última cita</dt><dd>${fmtHora(cierre - BLOQUE)}</dd></div>`);
+}
 
 // Estado "abierto ahora"
 (function estado() {
