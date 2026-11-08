@@ -6,7 +6,7 @@ const NEGOCIO = {
 
 // ===== Turnos de la clínica (horas decimales: 14.5 = 2:30 p. m.) =====
 const TURNOS = {
-  manana: { nombre: 'Mañana', desde: 8, hasta: 13 },
+  manana: { nombre: 'Mañana', desde: 9, hasta: 13 },
   tarde: { nombre: 'Tarde', desde: 15, hasta: 18 },
   noche: { nombre: 'Noche', desde: 18, hasta: 21 },
 };
@@ -185,19 +185,23 @@ const CONSEJOS = [
   'Los niños deben ir al dentista desde su primer diente.',
 ];
 
-// Medias horas de un turno
+// Duración de cada reserva (en horas): 1 = 9:00, 10:00, 11:00…
+const BLOQUE = 1;
+// Horas de un turno
 function horasDeTurno(t) {
   const out = [];
-  for (let h = TURNOS[t].desde; h <= TURNOS[t].hasta - 0.5; h += 0.5) out.push(h);
+  for (let h = TURNOS[t].desde; h <= TURNOS[t].hasta - BLOQUE; h += BLOQUE) out.push(h);
   return out;
 }
+// Datos guardados cuando las reservas eran cada media hora: 9.5 (9:30) cuenta como la hora 9
+const aBloque = (h) => Math.floor(h / BLOQUE) * BLOQUE;
 const turnoDeHora = (h) => Object.keys(TURNOS).find((t) => h >= TURNOS[t].desde && h < TURNOS[t].hasta);
 
 // Todas las horas en que atiende la clínica un día
 function horasDelDia(d) {
   const out = [];
   (NEGOCIO.horario[d.getDay()] || []).forEach(([a, b]) => {
-    for (let h = a; h <= b - 0.5; h += 0.5) out.push(h);
+    for (let h = a; h <= b - BLOQUE; h += BLOQUE) out.push(h);
   });
   return out;
 }

@@ -34,11 +34,13 @@ export const claveFecha = (d) =>
 const rango = (col, desde, hasta) =>
   query(col, where(documentId(), '>=', claveFecha(desde)), where(documentId(), '<=', claveFecha(hasta)));
 
+const aHora = (h) => (typeof aBloque === 'function' ? aBloque(h) : Math.floor(h));
 export function escucharOcupado(docId, desde, hasta, cb) {
   if (!db) return () => {};
   return onSnapshot(rango(collection(db, 'agenda', docId, 'ocupado'), desde, hasta), (snap) => {
     const mapa = {};
-    snap.forEach((d) => (mapa[d.id] = { completo: !!d.data().completo, horas: d.data().horas || [] }));
+    // Las medias horas antiguas (9.5) se cuentan en su hora (9)
+    snap.forEach((d) => (mapa[d.id] = { completo: !!d.data().completo, horas: [...new Set((d.data().horas || []).map(aHora))] }));
     cb(mapa);
   }, (err) => console.warn('Agenda no disponible:', err.message));
 }
@@ -54,7 +56,12 @@ export function escucharNotas(docId, desde, hasta, cb) {
   if (!db) return () => {};
   return onSnapshot(rango(collection(db, 'agenda', docId, 'notas'), desde, hasta), (snap) => {
     const mapa = {};
-    snap.forEach((d) => (mapa[d.id] = d.data()));
+    snap.forEach((d) => {
+      // Notas antiguas de las 9:30 se muestran en las 9 si esa hora no tiene nota
+      const n = { ...d.data() };
+      Object.keys(n).filter((k) => +k % 1).forEach((k) => { const h = String(aHora(+k)); if (!n[h]) n[h] = n[k]; });
+      mapa[d.id] = n;
+    });
     cb(mapa);
   }, (err) => console.warn('Notas no disponibles:', err.message));
 }

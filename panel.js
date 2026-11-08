@@ -48,7 +48,7 @@ const ocup = (id, d) => TODOS[id]?.[claveFecha(d)] || { completo: false, horas: 
 const estado = (d) => ocup(YO, d);
 const misTurnos = (d) => turnosDe(YO, d, SOLIC);
 const misHoras = (d) => horasDeDoctor(YO, d, SOLIC);
-const pasada = (d, h) => d.getTime() === hoy.getTime() && h + 0.5 <= new Date().getHours() + new Date().getMinutes() / 60;
+const pasada = (d, h) => d.getTime() === hoy.getTime() && h + BLOQUE <= new Date().getHours() + new Date().getMinutes() / 60;
 const estaOcupado = (id, d, h) => { const e = ocup(id, d); return e.completo || e.horas.includes(h); };
 // Doctor de la misma unidad (sillón compartido) que ya tiene esa hora ocupada, o undefined
 const unidadOcupadaPor = (id, d, h) => companerosDeUnidad(id).find((o) => ocup(o, d).horas.includes(h));
@@ -107,8 +107,8 @@ function pintarCitas() {
   citasEl.innerHTML = `<p class="citas__titulo">Citas por confirmar <span>${lista.length}</span></p>` + lista.map((c) => {
     const d = fechaDe(c.fecha);
     const yaPaso = c.fecha < claveFecha(hoy);
-    const choque = !yaPaso && estaOcupado(c.doctor, d, c.hora);
-    const enUnidad = !yaPaso && !choque && unidadOcupadaPor(c.doctor, d, c.hora);
+    const choque = !yaPaso && estaOcupado(c.doctor, d, aBloque(c.hora));
+    const enUnidad = !yaPaso && !choque && unidadOcupadaPor(c.doctor, d, aBloque(c.hora));
     return `<article class="cita${yaPaso ? ' cita--paso' : ''}">
       <div class="cita__cuando">
         <b>${fechaCorta(c.fecha)}</b><span>${fmtHora(c.hora)}</span><small>Turno ${(TURNOS[c.turno]?.nombre || '').toLowerCase()}</small>
@@ -134,7 +134,7 @@ citasEl.addEventListener('click', (e) => {
   if (!c) return;
   const ok = b.dataset.cita === 'aprobada';
   const doc = doctor(c.doctor), d = fechaDe(c.fecha);
-  const usa = ok && unidadOcupadaPor(c.doctor, d, c.hora);
+  const usa = ok && unidadOcupadaPor(c.doctor, d, aBloque(c.hora));
   if (usa && !confirm(`A esa hora ${doctor(usa).corto} ya tiene la unidad ocupada. ¿Aprobar igual?`)) return;
   const cuando = `el ${fechaLarga(d)} a las ${fmtHora(c.hora)}`;  // fmtHora ya termina en «m.»: no repetir el punto
   const txt = ok
@@ -153,8 +153,8 @@ citasEl.addEventListener('click', (e) => {
     }
     // Al aprobar, esa hora queda ocupada y con la nota del paciente
     const e2 = ocup(c.doctor, d);
-    if (!e2.completo && !e2.horas.includes(c.hora)) {
-      const v = { completo: false, horas: [...e2.horas, c.hora] };
+    if (!e2.completo && !e2.horas.includes(aBloque(c.hora))) {
+      const v = { completo: false, horas: [...e2.horas, aBloque(c.hora)] };
       (TODOS[c.doctor] ||= {})[c.fecha] = v;
       await api.ocupado(c.doctor, c.fecha, v);
     }
@@ -581,7 +581,7 @@ if (demo) {
   const yo = doctor(params.get('demo')) ? params.get('demo') : 'd1';
   const f = (i) => claveFecha(dias[i]);
   TODOS = {
-    d1: { [f(0)]: { completo: false, horas: [10, 10.5, 12] }, [f(3)]: { completo: true, horas: [] } },
+    d1: { [f(0)]: { completo: false, horas: [10, 12] }, [f(3)]: { completo: true, horas: [] } },
     d2: { [f(0)]: { completo: false, horas: [15, 16, 16.5] }, [f(1)]: { completo: false, horas: [15.5, 17] } },
     d3: { [f(0)]: { completo: false, horas: [19, 20] }, [f(1)]: { completo: false, horas: [18, 18.5] } },
   };
